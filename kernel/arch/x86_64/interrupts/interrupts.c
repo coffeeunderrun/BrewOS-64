@@ -1,4 +1,4 @@
-#include <arch/irq.h>
+#include <arch/interrupts.h>
 #include <stdint.h>
 
 typedef struct irq_regs
@@ -11,9 +11,9 @@ typedef struct irq_regs
 
 extern void _init_pics();
 extern void _load_idt();
-extern void _clear_hardware_interrupt(uint64_t irq);
+extern void _clear_hardware_irq(uint64_t irq);
 
-void init_irq()
+void init_interrupts()
 {
   _init_pics();
   _load_idt();
@@ -21,5 +21,5 @@ void init_irq()
 
 void _irq_handler(irq_regs_t regs)
 {
-  _clear_hardware_interrupt(regs.irq);
+  _clear_hardware_irq(regs.irq);
 }
