@@ -47,7 +47,7 @@ IM_FLAGS ?=
 VM        = qemu-system-$(ARCH)
 VM_FLAGS ?= -localtime
 
-ARCH_SRCS = multiboot.s bootstrap.s irq/irq.s irq/irq.c
+ARCH_SRCS = multiboot.s bootstrap.s interrupts/interrupts.s interrupts/interrupts.c
 ARCH_OBJS = $(addprefix o/$(ARCH)/, $(addsuffix .o, $(ARCH_SRCS)))
 ARCH_DEPS = $(ARCH_OBJS:.o=.d)
 ARCH_DIRS = $(sort $(dir $(ARCH_OBJS)))
