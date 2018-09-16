@@ -150,8 +150,8 @@ load_idt_entry:
   stosd
   ret
 
-global _clear_hardware_interrupt
-_clear_hardware_interrupt:
+global _clear_hardware_irq
+_clear_hardware_irq:
   cmp al, 8
   mov al, PIC_END_IRQ
   jge .pic2
@@ -206,7 +206,7 @@ IRQ_NO_ERROR 45, 13
 IRQ_NO_ERROR 46, 14
 IRQ_NO_ERROR 47, 15
 
-section .rodata
+section .data
 
 align 4096
 
