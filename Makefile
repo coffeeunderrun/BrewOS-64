@@ -47,25 +47,25 @@ IM_FLAGS ?=
 VM        = qemu-system-$(ARCH)
 VM_FLAGS ?= -localtime
 
-ARCH_OBJS := multiboot.o bootstrap.o
-ARCH_OBJS := $(addprefix o/$(ARCH)/, $(ARCH_OBJS))
-ARCH_DEPS  = $(ARCH_OBJS:.o=.d)
-ARCH_DIRS  = $(sort $(dir $(ARCH_OBJS)))
+ARCH_SRCS = multiboot.s bootstrap.s interrupts/interrupts.s interrupts/interrupts.c
+ARCH_OBJS = $(addprefix o/$(ARCH)/, $(addsuffix .o, $(ARCH_SRCS)))
+ARCH_DEPS = $(ARCH_OBJS:.o=.d)
+ARCH_DIRS = $(sort $(dir $(ARCH_OBJS)))
 
-KERN_OBJS := kernel.o
-KERN_OBJS := $(addprefix o/, $(KERN_OBJS))
-KERN_DEPS  = $(KERN_OBJS:.o=.d)
-KERN_DIRS  = $(sort $(dir $(KERN_OBJS)))
+KERN_SRCS = kernel.c
+KERN_OBJS = $(addprefix o/, $(addsuffix .o, $(KERN_SRCS)))
+KERN_DEPS = $(KERN_OBJS:.o=.d)
+KERN_DIRS = $(sort $(dir $(KERN_OBJS)))
 
-LIBK_OBJS :=
-LIBK_OBJS := $(addprefix o/libk/, $(LIBK_OBJS))
-LIBK_DEPS  = $(LIBK_OBJS:.o=.d)
-LIBK_DIRS  = $(sort $(dir $(LIBK_OBJS)))
+LIBK_SRCS =
+LIBK_OBJS = $(addprefix o/libk/, $(addsuffix .o, $(LIBK_SRCS)))
+LIBK_DEPS = $(LIBK_OBJS:.o=.d)
+LIBK_DIRS = $(sort $(dir $(LIBK_OBJS)))
 
-LIBC_OBJS :=
-LIBC_OBJS := $(addprefix o/libc/, $(LIBC_OBJS))
-LIBC_DEPS  = $(LIBC_OBJS:.o=.d)
-LIBC_DIRS  = $(sort $(dir $(LIBC_OBJS)))
+LIBC_SRCS =
+LIBC_OBJS = $(addprefix o/libc/, $(addsuffix .o, $(LIBC_SRCS)))
+LIBC_DEPS = $(LIBC_OBJS:.o=.d)
+LIBC_DIRS = $(sort $(dir $(LIBC_OBJS)))
 
 ISO_DIRS = iso/boot/grub
 
@@ -100,22 +100,27 @@ o/libc.o: $(LIBC_OBJS)
 	@$(LD) -MD $^ -o $@ $(LIBC_LD_FLAGS)
 
 # Assembler source (arch)
-o/%.o: kernel/arch/%.s
+o/%.s.o: kernel/arch/%.s
 	@echo "Assembling $@"
 	@$(AS) -MD $(@:.o=.d) $< -o $@ $(AS_FLAGS)
 
+# C compiler source (arch)
+o/%.c.o: kernel/arch/%.c
+	@echo "Compiling $@"
+	@$(CC) -MD -c $< -o $@ $(KERN_CC_FLAGS)
+
 # C compiler source (kernel)
-o/%.o: kernel/src/%.c
+o/%.c.o: kernel/src/%.c
 	@echo "Compiling $@"
 	@$(CC) -MD -c $< -o $@ $(KERN_CC_FLAGS)
 
 # C compiler source (libk)
-o/libk/%.o: libc/src/%.c
+o/libk/%.c.o: libc/src/%.c
 	@echo "Compiling $@"
 	@$(CC) -MD -c $< -o $@ $(LIBK_CC_FLAGS)
 
 # C compiler source (libc)
-o/libc/%.o: libc/src/%.c
+o/libc/%.c.o: libc/src/%.c
 	@echo "Compiling $@"
 	@$(CC) -MD -c $< -o $@ $(LIBC_CC_FLAGS)
 
