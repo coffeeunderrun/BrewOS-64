@@ -1,5 +1,6 @@
-/tools
-/iso
-/o
-*.bin
-*.iso
+Build/
+Tools/
+X64/
+*.suo
+*.user
+*.vs
