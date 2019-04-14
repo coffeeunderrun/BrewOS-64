@@ -97,4 +97,4 @@ if(!(Test-Path -Path $baseToolsPath))
 # Build BrewBoot UEFI Application
 $target = if($releaseBuild -eq $true) { "RELEASE" } else { "DEBUG" }
 & BuildBrewBoot.bat "X64", "$target", "$toolChain", "OvmfPkg\OvmfPkgX64.dsc"
-& BuildBrewBoot.bat "X64", "$target", "$toolChain", "MdePkg\MdePkg.dsc"
+& BuildBrewBoot.bat "X64", "$target", "$toolChain", "BrewBoot\BrewBoot.dsc"

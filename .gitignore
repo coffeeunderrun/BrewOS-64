@@ -1,6 +1,7 @@
 Build/
+Debug/
+Release/
 Tools/
-X64/
 *.suo
 *.user
 *.vs
