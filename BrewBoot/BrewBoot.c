@@ -1,6 +1,9 @@
 #include <Uefi.h>
+#include <Library/UefiApplicationEntryPoint.h>
+#include <Library/UefiLib.h>
 
-EFI_STATUS EFIAPI efi_main(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* system_table)
+EFI_STATUS EFIAPI BrewBootEntryPoint (IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable)
 {
+	Print(L"Success!\n");
 	return EFI_SUCCESS;
 }
