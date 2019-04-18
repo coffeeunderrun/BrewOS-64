@@ -10,4 +10,10 @@
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="BrewBoot.c">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="startup.nsh" />
+  </ItemGroup>
 </Project>
