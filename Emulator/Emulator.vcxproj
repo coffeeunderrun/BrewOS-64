@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{0FAA8C51-23FE-4B3E-9DD6-90C5EAB1F6ED}</ProjectGuid>
+    <ProjectGuid>{D167D773-8C5A-4740-9E27-20ECC7B6EC27}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup>
@@ -23,26 +23,13 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Configuration)\$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
-    <NMakeBuildCommandLine>$(SolutionDir)\BrewBoot\BrewBoot.bat Build $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\BrewBoot\BrewBoot.bat Rebuild $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>$(SolutionDir)\BrewBoot\BrewBoot.bat Clean $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>$(SolutionDir)\Emulator\Emulator.bat Build $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\Emulator\Emulator.bat Rebuild $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\Emulator\Emulator.bat Clean $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeCleanCommandLine>
   </PropertyGroup>
-  <PropertyGroup>
-    <NMakeIncludeSearchPath>$(SolutionDir)EDK2\MdePkg\Include;$(SolutionDir)EDK2\MdePkg\Include\$(Platform)</NMakeIncludeSearchPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <ClCompile Include="BrewBoot.c">
-      <FileType>CppCode</FileType>
-    </ClCompile>
-    <None Include="startup.nsh">
-      <FileType>Document</FileType>
-    </None>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="AfterBuild" AfterTargets="Build">
-    <Copy SourceFiles="startup.nsh" DestinationFolder="$(OutDir)" />
-  </Target>
 </Project>

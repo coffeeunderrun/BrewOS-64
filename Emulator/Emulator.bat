@@ -53,12 +53,13 @@ REM Unsupported action
 GOTO :END
 
 :CLEAN
-	CALL BUILD cleanall --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform BrewBoot\BrewBoot.dsc
+	CALL BUILD cleanall --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform Nt32Pkg\Nt32Pkg.dsc
 	GOTO :END
 
 :BUILD
-	CALL BUILD all --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform BrewBoot\BrewBoot.dsc
-	ROBOCOPY "%WORKSPACE%\Build\BrewBoot\%BUILD_TARGET%_%TAG_NAME%\X64\BrewBoot\BrewBoot\%BUILD_TARGET%\." "%OUTPUT_PATH%\." BrewBoot.efi BrewBoot.dll BrewBoot.pdb
+	CALL BUILD all --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform Nt32Pkg\Nt32Pkg.dsc
+	ROBOCOPY "%WORKSPACE%\Build\NT32X64\%BUILD_TARGET%_%TAG_NAME%\FV\." "%OUTPUT_PATH%\FV\."
+	ROBOCOPY "%WORKSPACE%\Build\NT32X64\%BUILD_TARGET%_%TAG_NAME%\X64\." "%OUTPUT_PATH%\X64\." SecMain.exe SecMain.pdb
 	GOTO :END
 
 :END
