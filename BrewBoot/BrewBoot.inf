@@ -4,7 +4,7 @@
   FILE_GUID                 = ab39b880-5c95-11e9-8d98-9cb6d0bcdce0
   MODULE_TYPE               = UEFI_APPLICATION
   VERSION_STRING            = 1.0
-  ENTRY_POINT               = BrewBootEntryPoint
+  ENTRY_POINT               = brew_boot_main
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -13,5 +13,18 @@
   BrewBoot.c
 
 [LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  PeCoffGetEntryPointLib
+  PeCoffLib
   UefiApplicationEntryPoint
   UefiLib
+
+[Protocols]
+  gEfiLoadedImageProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+
+[BuildOptions]
+  DEBUG_*_*_DLINK_FLAGS = /EXPORT:InitializeDriver=$(IMAGE_ENTRY_POINT) /BASE:0x10000 /ALIGN:4096 /FILEALIGN:4096 /SUBSYSTEM:CONSOLE /DEBUG
+  RELEASE_*_*_DLINK_FLAGS = /ALIGN:4096 /FILEALIGN:4096
