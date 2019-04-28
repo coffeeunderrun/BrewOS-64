@@ -11,9 +11,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="BrewBoot.c">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="startup.nsh" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BrewBoot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
