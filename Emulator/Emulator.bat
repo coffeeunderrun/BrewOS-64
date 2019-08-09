@@ -18,9 +18,9 @@ IF /I "%~5" == "RELEASE" (
 
 REM Prepare EDK2 build environment
 IF EXIST "%PACKAGES_PATH%\BaseTools\Bin\Win32\" (
-	CALL EDKSETUP.BAT --nt32
+	CALL EDKSETUP.BAT %TAG_NAME%
 ) ELSE (
-	CALL EDKSETUP.BAT --nt32 rebuild
+	CALL EDKSETUP.BAT %TAG_NAME% rebuild
 )
 IF NOT ERRORLEVEL 0 GOTO :END
 
@@ -53,13 +53,13 @@ REM Unsupported action
 GOTO :END
 
 :CLEAN
-	CALL BUILD cleanall --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform Nt32Pkg\Nt32Pkg.dsc
+	CALL BUILD cleanall --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform EmulatorPkg\EmulatorPkg.dsc
 	GOTO :END
 
 :BUILD
-	CALL BUILD all --arch X64 --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform Nt32Pkg\Nt32Pkg.dsc
-	ROBOCOPY "%WORKSPACE%\Build\NT32X64\%BUILD_TARGET%_%TAG_NAME%\FV\." "%OUTPUT_PATH%\FV\."
-	ROBOCOPY "%WORKSPACE%\Build\NT32X64\%BUILD_TARGET%_%TAG_NAME%\X64\." "%OUTPUT_PATH%\X64\." SecMain.exe SecMain.pdb
+	CALL BUILD all --arch X64 --define WIN_SEC_BUILD --buildtarget %BUILD_TARGET% --tagname %TAG_NAME% --platform EmulatorPkg\EmulatorPkg.dsc
+	ROBOCOPY "%WORKSPACE%\Build\EmulatorX64\%BUILD_TARGET%_%TAG_NAME%\FV\." "%OUTPUT_PATH%\FV\."
+	ROBOCOPY "%WORKSPACE%\Build\EmulatorX64\%BUILD_TARGET%_%TAG_NAME%\X64\." "%OUTPUT_PATH%\X64\." WinHost.exe WinHost.pdb
 	GOTO :END
 
 :END
