@@ -46,7 +46,7 @@
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup>
-    <LocalDebuggerCommand>$(SolutionDir)$(Configuration)\$(Platform)\SecMain.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>WinHost.exe</LocalDebuggerCommand>
     <LocalDebuggerCommandArguments>
     </LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Configuration)\$(Platform)\</LocalDebuggerWorkingDirectory>
