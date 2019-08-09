@@ -21,10 +21,14 @@
   UefiApplicationEntryPoint
   UefiLib
 
+[Guids]
+  gEfiFileInfoGuid
+
 [Protocols]
   gEfiLoadedImageProtocolGuid
   gEfiSimpleFileSystemProtocolGuid
 
 [BuildOptions]
-  DEBUG_*_*_DLINK_FLAGS = /EXPORT:InitializeDriver=$(IMAGE_ENTRY_POINT) /BASE:0x10000 /ALIGN:4096 /FILEALIGN:4096 /SUBSYSTEM:CONSOLE /DEBUG
-  RELEASE_*_*_DLINK_FLAGS = /ALIGN:4096 /FILEALIGN:4096
+  DEBUG_*_*_CC_FLAGS = /Od
+      *_*_*_DLINK_FLAGS = /ALIGN:4096 /FILEALIGN:4096 /SUBSYSTEM:CONSOLE /EXPORT:InitializeDriver=$(IMAGE_ENTRY_POINT)
+  DEBUG_*_*_DLINK_FLAGS = /DEBUG
