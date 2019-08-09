@@ -31,4 +31,4 @@
 
 [PcdsFixedAtBuild]
   gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80000040
-  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1f
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x0f

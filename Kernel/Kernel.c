@@ -1,8 +1,6 @@
-volatile char * text_memory = (volatile char *)0xB8000;
+#include <stdbool.h>
 
 void kernel_main()
 {
-	*text_memory = 'B';
-
-	while (1);
+	while (true);
 }
