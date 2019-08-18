@@ -42,7 +42,7 @@
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="AfterBuild" AfterTargets="Build">
+  <Target Name="AfterBuild" AfterTargets="Build;Rebuild">
     <Copy SourceFiles="startup.nsh" DestinationFolder="$(OutDir)" />
   </Target>
 </Project>
