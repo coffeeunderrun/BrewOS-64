@@ -43,19 +43,19 @@ EFI_STATUS EFIAPI brew_boot_main(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE
 	}
 
 	// Load kernel
-	status = load_kernel_image(L"Kernel.exe");
+	status = load_kernel_image(L"Kernel.dll");
 	if (EFI_ERROR(status))
 	{
 		return status;
 	}
-
+	
 	// Don't need boot services any more
 	status = boot_services->ExitBootServices(image_handle, 0);
 	if (EFI_ERROR(status))
 	{
 		DEBUG((EFI_D_ERROR, "\nFailed to exit boot services. (%r)\n", status));
 	}
-	
+
 	// Jump to kernel
 	kernel_main();
 
@@ -73,7 +73,7 @@ static EFI_STATUS load_kernel_image(IN CHAR16 *file_name)
 	// Get file system
 	EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *file_system = NULL;
 	EFI_STATUS status = boot_services->HandleProtocol(loaded_image->DeviceHandle, &gEfiSimpleFileSystemProtocolGuid, (void **)&file_system);
-	if(EFI_ERROR(status))
+	if (EFI_ERROR(status))
 	{
 		DEBUG((EFI_D_ERROR, "\nFailed to get file system. (%r)\n", status));
 		return status;
@@ -82,12 +82,12 @@ static EFI_STATUS load_kernel_image(IN CHAR16 *file_name)
 	// Get file handle for volume root
 	EFI_FILE_PROTOCOL *volume = NULL;
 	status = file_system->OpenVolume(file_system, &volume);
-	if(EFI_ERROR(status))
+	if (EFI_ERROR(status))
 	{
 		DEBUG((EFI_D_ERROR, "\nFailed to open boot volume. (%r)\n", status));
 		return status;
 	}
-	
+
 	// Get file handle for kernel
 	EFI_FILE_PROTOCOL *file = NULL;
 	status = volume->Open(volume, &file, file_name, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
