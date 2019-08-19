@@ -7,7 +7,7 @@ A 64-bit hobby operating system for the x86_64 architecture.
 * Visual Studio 2017+
 * Python 3.7+
 * NASM 2.14+
-* EDK2 UDK2018+
+* EDK2
 
 ## Getting Started
 1. GIT the latest source
@@ -19,9 +19,7 @@ A 64-bit hobby operating system for the x86_64 architecture.
 	* Add a new environment variable called NASM_PREFIX and point it to the NASM installation path.
 	* **NOTE:** The NASM_PREFIX value must end with a backslash.
 4. Open the BrewOS solution in Visual Studio.
-5. Build the Emulator project.
-6. Build the BrewBoot project.
-7. Build the Kernel project.
+5. Build *(F6)* the BrewOS solution.
 8. Debug *(F5 or Ctrl+F5)* using **Local Windows Debugger** to run the Windows-Hosted UEFI emulator.
 
 ## Resources
