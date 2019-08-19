@@ -8,12 +8,6 @@
   BUILD_TARGETS                  = DEBUG|RELEASE
   SKUID_IDENTIFIER               = DEFAULT
 
-!if $(TARGET) == "DEBUG"
-  DEFINE DEBUG = TRUE
-!else
-  DEFINE DEBUG = FALSE
-!endif
-
 [LibraryClasses]
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
@@ -36,7 +30,7 @@
   BrewBoot/BrewBoot.inf
 
 [PcdsFixedAtBuild]
-!if $(DEBUG)
+!if $(TARGET) == "DEBUG"
   gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x80000040
   gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0x1F
 !endif
