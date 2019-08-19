@@ -33,10 +33,13 @@
   <PropertyGroup>
     <NMakeIncludeSearchPath>$(SolutionDir)EDK2\MdePkg\Include;$(SolutionDir)EDK2\MdePkg\Include\$(Platform)</NMakeIncludeSearchPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NMakePreprocessorDefinitions>IS_DEBUG</NMakePreprocessorDefinitions>
+  </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="BrewBoot.c">
-      <FileType>CppCode</FileType>
-    </ClCompile>
+    <ClCompile Include="BrewBoot.c" />
+    <ClCompile Include="Pe.c" />
+    <ClInclude Include="Pe.h" />
     <None Include="startup.nsh">
       <FileType>Document</FileType>
     </None>
