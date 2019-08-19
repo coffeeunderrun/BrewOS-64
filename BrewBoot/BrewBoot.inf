@@ -11,6 +11,7 @@
 
 [Sources]
   BrewBoot.c
+  Pe.c
 
 [LibraryClasses]
   BaseLib
@@ -31,5 +32,5 @@
 [BuildOptions]
   *_*_*_DLINK_FLAGS = /ALIGN:4096 /FILEALIGN:4096 /SUBSYSTEM:CONSOLE
 
-  DEBUG_*_*_CC_FLAGS = /Od
-  DEBUG_*_*_DLINK_FLAGS = /EXPORT:InitializeDriver=$(IMAGE_ENTRY_POINT) /DEBUG
+  DEBUG_*_*_CC_FLAGS = /Od /DIS_DEBUG
+  DEBUG_*_*_DLINK_FLAGS = /EXPORT:InitializeDriver=$(IMAGE_ENTRY_POINT) /DEBUG $(OUTPUT_PATH)/kernel.lib
