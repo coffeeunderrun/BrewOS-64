@@ -34,6 +34,7 @@
     <UseOfMfc />
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(SolutionDir)\MSBuild\Nasm.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -80,6 +81,16 @@
       <Driver>Driver</Driver>
       <SectionAlignment>4096</SectionAlignment>
     </Link>
+    <NASM>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </NASM>
+    <NASM>
+      <ErrorReportingFormat>1</ErrorReportingFormat>
+    </NASM>
+    <NASM>
+      <OutputFileFormat>1</OutputFileFormat>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </NASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -104,8 +115,19 @@
       <Driver>Driver</Driver>
       <SectionAlignment>4096</SectionAlignment>
     </Link>
+    <NASM>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </NASM>
+    <NASM>
+      <ErrorReportingFormat>1</ErrorReportingFormat>
+    </NASM>
+    <NASM>
+      <OutputFileFormat>1</OutputFileFormat>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </NASM>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(SolutionDir)\MSBuild\Nasm.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
 </Project>
