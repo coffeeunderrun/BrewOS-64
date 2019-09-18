@@ -12,6 +12,7 @@
 [Sources]
   BrewBoot.c
   Pe.c
+  Pe.h
 
 [LibraryClasses]
   BaseLib

@@ -17,11 +17,7 @@ IF /I "%~5" == "RELEASE" (
 )
 
 REM Prepare EDK2 build environment
-IF EXIST "%PACKAGES_PATH%\BaseTools\Bin\Win32\" (
-	CALL EDKSETUP.BAT %TAG_NAME%
-) ELSE (
-	CALL EDKSETUP.BAT %TAG_NAME% rebuild
-)
+CALL EDKSETUP.BAT Rebuild %TAG_NAME%
 IF NOT ERRORLEVEL 0 GOTO :END
 
 REM Check for CLEAN action
