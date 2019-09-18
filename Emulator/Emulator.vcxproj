@@ -25,7 +25,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
     <NMakeBuildCommandLine>$(SolutionDir)\Emulator\Emulator.bat Build $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\Emulator\Emulator.bat Rebuild $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeReBuildCommandLine>

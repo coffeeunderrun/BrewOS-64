@@ -24,7 +24,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Configuration)\$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
     <NMakeBuildCommandLine>$(SolutionDir)\BrewBoot\BrewBoot.bat Build $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\BrewBoot\BrewBoot.bat Rebuild $(SolutionDir) $(OutDir) $(MSBuildToolsVersion) $(Configuration)</NMakeReBuildCommandLine>
