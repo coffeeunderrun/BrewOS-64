@@ -1,4 +1,0 @@
-[submodule "EDK2"]
-	path = EDK2
-	url = https://github.com/tianocore/edk2.git
-	branch = master
