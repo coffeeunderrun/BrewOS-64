@@ -1,0 +1,13 @@
+OUTPUT_ARCH(i386)
+OUTPUT_FORMAT(binary)
+ENTRY(stage2)
+SECTIONS
+{
+	.text : { *(.text .text*) *(.rodata .rodata*) } = 0
+
+	.data : { *(.data) } = 0
+
+	.bss : { *(.bss) *(COMMON) } = 0
+
+	/DISCARD/ : { *(.comment) *(.eh_frame) }
+}
