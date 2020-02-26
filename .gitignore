@@ -1,7 +1,4 @@
-Build/
-Debug/
-Release/
-Tools/
-*.suo
-*.user
-*.vs
+/bin
+/o
+/root
+*.img
