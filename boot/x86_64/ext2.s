@@ -5,7 +5,7 @@ global load_file, open_volume
 extern print, read_disk, reboot
 
 sb equ 0x8000 ; Super block
-bb equ 0xA000 ; Block buffer
+bb equ 0x8400 ; Block buffer
 
 ; Searches root directory and loads file at ES:0000
 ; Filename pointer in AX and filename length in CX
@@ -100,7 +100,7 @@ read_block:
 ; Load up to 268 KiB of inode stating at ES:0000
 ; ES will increment every 64 KiB read
 ; Inode number in EAX
-; out EAX : Bytes read
+; Returns inode size in bytes in EAX
 read_inode:
     push bp
     mov bp, sp

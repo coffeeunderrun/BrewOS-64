@@ -37,12 +37,11 @@ stage1:
     mov dx, 0x7E00 ; Destination offset
     call read_disk
 
-    ; Load stage 2 boot loader at 1000:0000
+    ; Load stage 2 boot loader at 0C40:0000
     call open_volume
     mov ax, filename        ; Filename
     mov cx, filename.length ; Filename length
-    xor dx, dx              ; File start block offset
-    mov bx, 0x1000
+    mov bx, 0xC40
     mov es, bx              ; Destination segment
     call load_file
 
@@ -52,7 +51,7 @@ stage1:
 
     ; Jump to stage 2 boot loader
     mov dl, [drive]
-    jmp 0x1000:0
+    jmp 0:0xC400
 
 error_not_found:
     mov si, msg.not_found

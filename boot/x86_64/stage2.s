@@ -3,6 +3,9 @@ bits 16
 extern drive, print, read_disk, reboot
 extern load_file, open_volume
 
+pml4 equ 0x1000
+pml3 equ 0x2000
+
 section .text
 
 global stage2
@@ -20,90 +23,133 @@ stage2:
     ; Save boot drive number
     mov [drive], dl
 
-    push ds
-    sti
-
     ; Load kernel at 2000:0000
     call open_volume
     mov ax, filename        ; Filename
     mov cx, filename.length ; Filename length
-    xor dx, dx              ; File start block offset
     mov bx, 0x2000
     mov es, bx              ; Destination segment
     call load_file
+    mov [filesize], eax
 
     ; Check if file was found
     cmp eax, 0
     jz error_not_found
-    push eax
 
-    cli
+    ; Reset ES
+    xor ax, ax
+    mov es, ax
 
     ; Enable A20
     mov ax, 0x2401
     int 0x15
-    jc error_incompatible
 
-    ; Get A20 status
-    mov ax, 0x2402
-    int 0x15
-    jc error_incompatible
+    ; Disable IRQs
+    mov al, 0xFF
+    out 0xA1, al
+    out 0x21, al
 
-    ; Verify A20 is enabled
-    cmp al, 0
-    je error_incompatible
+    ; Load IDT register
+    lidt [idt]
 
     ; Load GDT register
-    lgdt [gdt.ptr]
+    lgdt [gdt.low]
 
-    ; Enable protected mode
+    ; Zero out PML4 and PML3
+    xor eax, eax
+    mov ecx, 0x1000
+    mov edi, pml4
+    rep stosd
+
+    ; PML4
+    mov eax, pml3
+    or eax, 0x3
+    mov [pml4], eax        ; First 512 GiB
+    mov [pml4 + 4088], eax ; Last 512 GiB
+
+    ; PML3
+    mov eax, 0x83
+    mov [pml3], eax        ; First 1 GiB
+    mov [pml3 + 4080], eax ; Second to last 1 GiB
+    add eax, 0x100000
+    mov [pml3 + 4088], eax ; Last 1 GiB
+
+    ; Point CR3 at the PML4
+    mov edx, pml4
+    mov cr3, edx
+
+    ; Set PAE and PGE bit
+    mov eax, cr4
+    or eax, 0xA0
+    mov cr4, eax
+
+    ; Set LME and NXE bit
+    mov ecx, 0xC0000080
+    rdmsr
+    or eax, 0x100
+    wrmsr
+
+    ; Enable long mode
     mov eax, cr0
-    or al, 1
+    or eax, 0x80000001
     mov cr0, eax
 
-    jmp $ + 2
+    mov ax, gdt.data
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
 
-    ; Flat data descriptor
-    mov bx, 0x8
-    mov ds, bx
-    mov es, bx
-    mov fs, bx
-    mov gs, bx
-
-    ; Disable protected mode
-    and al, 0xFE
-    mov cr0, eax
-
-    pop ecx           ; Number of bytes to copy
-    mov esi, 0x20000  ; Read from 128 KiB location
-    mov edi, 0x100000 ; Copy to 1 MiB location
-    a32 rep movsb
-
-    pop ds
-    sti
-
-    ; TODO: Enable long mode, parse ELF headers, and jump to kernel entry point
-    jmp $
-
-error_incompatible:
-    mov si, msg.incompatible
-    call print
-    jmp reboot
+    ; Jump to long mode
+    jmp gdt.code:trampoline
 
 error_not_found:
     mov si, msg.not_found
     call print
     jmp reboot
 
+filesize: dq 0
 filename: db "brewkern"
 .length:  equ $ - filename
 
 msg:
-.incompatible: db "Incompatible system.", 13, 10, 0
-.not_found:    db "Kernel not found.", 13, 10, 0
+.not_found: db "Kernel not found.", 13, 10, 0
 
+bits 64
+
+trampoline:
+    mov rsi, 0x21000
+    mov rdi, 0x100000
+    mov rcx, [filesize]
+    sub rcx, 0x1000
+    rep movsb
+
+    ; Load GDT register again using higher half pointer
+    mov rax, 0xFFFFFFFF80000000
+    add rax, gdt.high
+    lgdt [rax]
+
+    ; TODO: Parse ELF header for kernel entry
+
+    ; Jump to kernel in higher half
+    mov rax, 0xFFFFFFFF80100000
+    jmp rax
+
+align 8
+idt:
+.length: dw 0
+.base:   dd 0
+
+align 8
 gdt:
 .null: dq 0
-.data: dq 0xCF92000000FFFF
-.ptr:  dw $ - gdt - 1
-       dd gdt + 0x10000
+.code: equ $ - gdt
+       dq 0x00209A0000000000
+.data: equ $ - gdt
+       dq 0x0000920000000000
+.low:  dw $ - gdt - 1
+       dq gdt
+.high: dw .end - gdt - 1
+       dq gdt + 0xFFFFFFFF80000000
+.end:
