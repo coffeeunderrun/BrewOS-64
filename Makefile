@@ -2,9 +2,9 @@ TARGET ?= x86_64
 
 # ASSEMBLER
 AS     := yasm
-ASFLAG := -pnasm -ax86
+ASFLAG := -pnasm
 ASBOOT := -felf32
-ASLOAD := $(ASBOOT)
+ASLOAD := -felf64 -mamd64
 ASKERN := -felf64 -mamd64
 
 ifdef DEBUG
@@ -16,7 +16,7 @@ CC     := $(TARGET)-elf-gcc
 CCFLAG := -std=gnu17 -ffreestanding -nostdlib -mno-red-zone -zmax-page-size=4096 -Wall
 CCBOOT := -m16 -Os -Iboot/include
 CCLOAD := $(CCBOOT) -Ikernel/include
-CCKERN := -m64 -Ikernel/include
+CCKERN := -m64 -mcmodel=kernel -Ikernel/include
 
 ifdef DEBUG
 CCKERN += -gdwarf-2 -Og

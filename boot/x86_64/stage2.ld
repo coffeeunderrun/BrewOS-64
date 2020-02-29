@@ -1,13 +1,30 @@
-OUTPUT_ARCH(i386)
+OUTPUT_ARCH(i386:x86-64)
 OUTPUT_FORMAT(binary)
 ENTRY(stage2)
 SECTIONS
 {
-	.text : { *(.text .text*) *(.rodata .rodata*) } = 0
+	. = 0xC400;
 
-	.data : { *(.data) } = 0
+	.text :
+	{
+		*(.text .text*)
+		*(.rodata .rodata*)
+	} = 0
 
-	.bss : { *(.bss) *(COMMON) } = 0
+	.data :
+	{
+		*(.data)
+	} = 0
 
-	/DISCARD/ : { *(.comment) *(.eh_frame) }
+	.bss :
+	{
+		*(.bss)
+		*(COMMON)
+	} = 0
+
+	/DISCARD/ :
+	{
+		*(.comment)
+		*(.eh_frame)
+	}
 }
