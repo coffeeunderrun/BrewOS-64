@@ -119,21 +119,29 @@ msg:
 bits 64
 
 trampoline:
-    mov rsi, 0x21000
-    mov rdi, 0x100000
-    mov rcx, [filesize]
-    sub rcx, 0x1000
+    ; Parse ELF headers and load segments into proper locations
+    mov rax, [0x20020]       ; Program header offset
+    add rax, 0x20000         ; Where kernel was originally loaded
+    xor rcx, rcx
+    mov cx, [0x20038]        ; Program header count
+.next:
+    push rcx
+    mov rbx, [rax + 0x8]     ; Segment offset from start of file
+    mov rcx, [rax + 0x20]    ; Segment size in bytes to copy
+    mov rdi, [rax + 0x18]    ; Physical memory address destination
+    lea rsi, [rbx + 0x20000] ; Source location offset
     rep movsb
+    pop rcx
+    add ax, [0x20036]        ; Point to net program header
+    loop .next               ; Repeat if any program headers remaining
 
     ; Load GDT register again using higher half pointer
     mov rax, 0xFFFFFFFF80000000
     add rax, gdt.high
     lgdt [rax]
 
-    ; TODO: Parse ELF header for kernel entry
-
     ; Jump to kernel in higher half
-    mov rax, 0xFFFFFFFF80100000
+    mov rax, [0x20018] ; Entry point
     jmp rax
 
 align 8

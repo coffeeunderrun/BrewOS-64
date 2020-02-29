@@ -4,7 +4,7 @@ ENTRY(main)
 VMA = 0xFFFFFFFF80000000;
 SECTIONS
 {
-	. = VMA;
+	. = 0x100000 + VMA;
 
 	.text ALIGN(4K) : AT(ADDR(.text) - VMA)
 	{
