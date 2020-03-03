@@ -1,11 +1,12 @@
 bits 16
 
+global entry
+
 extern drive, print, read_disk, reboot
 extern load_file, open_volume
 
 section .text
 
-global entry
 entry:
     ; Ensure execution at 0000:7C00
     jmp 0:stage1
