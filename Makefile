@@ -18,10 +18,10 @@ AR := $(TARGET)-elf-ar
 CC     := $(TARGET)-elf-gcc
 CCFLAG := -std=gnu17 -ffreestanding -nostdlib -zmax-page-size=4096 -Wall \
 	-masm=intel -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
-CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ilib/include
+CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ilib/include -Ikernel/arch/$(TARGET)/include
 
 ifdef DEBUG
-CCKERN += -gdwarf-2 -Og
+CCKERN += -gdwarf-2 -O0
 else
 CCKERN += -O3
 endif # DEBUG
@@ -45,12 +45,11 @@ LOAD_OBJS := loader/stage2.s loader/bios.s loader/ext2.s
 LOAD_OBJS := $(addprefix o/, $(addsuffix .o, $(LOAD_OBJS)))
 LOAD_DEPS := $(LOAD_OBJS:.o=.d)
 
-KERN_OBJS := kernel/entry.s kernel/main.c kernel/cpu.s \
-	kernel/mem/paging.c kernel/mem/pmm.c
+KERN_OBJS := kernel/entry.s kernel/main.c kernel/cpu.s kernel/memory.c
 KERN_OBJS := $(addprefix o/, $(addsuffix .o, $(KERN_OBJS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
 
-LIBK_OBJS := libk/string.c
+LIBK_OBJS := libk/memcpy.c libk/memset.c
 LIBK_OBJS := $(addprefix o/, $(addsuffix .o, $(LIBK_OBJS)))
 LIBK_DEPS := $(LIBK_OBJS:.o=.d)
 
@@ -99,6 +98,10 @@ o/kernel/%.s.o: kernel/arch/$(TARGET)/%.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) $(ASKERN) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) $(ASKERN) -o$@ $<
+
+o/kernel/%.c.o: kernel/arch/$(TARGET)/%.c
+	@echo "Compiling $(@F)..."
+	@$(CC) $(CCFLAG) $(CCKERN) -MMD -c -o$@ $<
 
 o/kernel/%.c.o: kernel/%.c
 	@echo "Compiling $(@F)..."

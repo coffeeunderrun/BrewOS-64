@@ -5,11 +5,11 @@ global stage2
 extern drive, print, read_disk, reboot
 extern load_file, open_volume
 
-kb   equ 0x20000
-mm   equ 0x70000
-pml4 equ 0x1000
-pdp  equ 0x2000
-vma  equ 0xFFFFFFFF80000000
+kb equ 0x20000            ; Kernel buffer
+mm equ 0x70000            ; Memory map
+p4 equ 0x1000             ; Temporary PML4
+p3 equ 0x2000             ; Temporary PDP
+vo equ 0xFFFFFFFF80000000 ; Kernel virtual higher half offset
 
 section .text
 
@@ -76,29 +76,29 @@ stage2:
     ; Load GDT register
     lgdt [gdt.low]
 
-    ; Zero out PML4 and PML3
+    ; Zero out page tables
     xor eax, eax
     mov ecx, 0x1000
-    mov edi, pml4
+    mov edi, p4
     rep stosd
 
     ; These page tables are temporary and will be trashed by the kernel later
     ; PML4 table
-    mov eax, pdp
+    mov eax, p3
+    or eax, 0x3             ; Present and writable
+    mov [p4], eax           ; Identity map first 512 GiB
+    mov [p4 + 511 * 8], eax ; Map last 512 GiB to first 512 GiB
+    mov eax, p4
     or eax, 0x3
-    mov [pml4], eax           ; Identity map first 512 GiB
-    mov [pml4 + 511 * 8], eax ; Map last 512 GiB to first 512 GiB
-    mov eax, pml4
-    or eax, 0x3
-    mov [pml4 + 510 * 8], eax ; Recursively map second to last entry to PML4 table
+    mov [p4 + 510 * 8], eax ; Recursively map second to last entry to PML4 table
 
     ; Page directory pointer table
-    mov eax, 0x83
-    mov [pdp], eax           ; Identity map first 1 GiB
-    mov [pdp + 510 * 8], eax ; Map second to last 1 GiB to first 1 GiB
+    mov eax, 0x83           ; Present and writable
+    mov [p3], eax           ; Identity map first 1 GiB
+    mov [p3 + 510 * 8], eax ; Map second to last 1 GiB to first 1 GiB
 
     ; Point CR3 at the PML4
-    mov edx, pml4
+    mov edx, p4
     mov cr3, edx
 
     ; Set PAE and PGE bit
@@ -143,7 +143,7 @@ bits 64
 
 trampoline:
     ; Load GDT register again using higher half pointer
-    mov rax, vma
+    mov rax, vo
     add rax, gdt.high
     lgdt [rax]
 
@@ -155,7 +155,7 @@ trampoline:
 .next_segment:
     push rcx
     mov rbx, [rax + 0x8]  ; Segment offset from start of file
-    mov rcx, [rax + 0x20] ; Segment size in bytes to copy
+    mov rcx, [rax + 0x28] ; Segment size in bytes to copy
     mov rdi, [rax + 0x18] ; Physical memory address destination
     lea rsi, [rbx + kb]   ; Source location offset
     rep movsb
@@ -164,7 +164,7 @@ trampoline:
     loop .next_segment    ; Repeat if any program headers remaining
 
     ; Pass memory map pointer to kernel
-    mov rdi, vma
+    mov rdi, vo
     add rdi, mm
 
     ; Jump to entry point in higher half
@@ -185,5 +185,5 @@ gdt:
 .low:  dw $ - gdt - 1
        dq gdt
 .high: dw .end - gdt - 1
-       dq gdt + vma
+       dq gdt + vo
 .end:
