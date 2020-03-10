@@ -22,9 +22,8 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+		kernel_end = .;
 	} = 0
-
-	kernel_end = ALIGN(4K);
 
 	/DISCARD/ :
 	{
