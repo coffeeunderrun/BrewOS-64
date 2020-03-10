@@ -1,12 +1,9 @@
-#include <mem/paging.h>
-#include <mem/pmm.h>
+#include <memory.h>
 #include <stdint.h>
 
 void main(void *mmap)
 {
-    paging_init();
-
-    pmm_init(mmap);
+    init_memory(mmap);
 
     while(1);
 }
