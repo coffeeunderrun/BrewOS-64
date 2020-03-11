@@ -163,6 +163,7 @@ trampoline:
     add ax, [kb + 0x36]   ; Point to next program header
     loop .next_segment    ; Repeat if any program headers remaining
 
+    ; TODO: Pass memory map entry count to kernel
     ; Pass memory map pointer to kernel
     mov rdi, vo
     add rdi, mm
