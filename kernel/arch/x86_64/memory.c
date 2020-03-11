@@ -1,5 +1,13 @@
+/*
+ * Assumptions
+ * - Loader passes higher half mmap address
+ * - Kernel was loaded at 1 MiB (no available frames between 1 MiB and kernel)
+ * - Memory map has last entry with a type of zero (temporary)
+ */
+
 #include <cpu.h>
 #include <memory.h>
+#include <status.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -12,100 +20,106 @@
 #define MMT_BAD         5 // Bad (DO NOT USE)
 
 // Page Translation Table Entry Field Bits
-#define PAGE_PRESENT   (1ull << 0)  // Set if loaded into physical memory
-#define PAGE_WRITE     (1ull << 1)  // Set if page can be written to, otherwise read-only
-#define PAGE_USER      (1ull << 2)  // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
-#define PAGE_PWT       (1ull << 3)  // Set for page-Level writethrough, otherwise writeback
-#define PAGE_PCD       (1ull << 4)  // Set if page-Level cache is disabled, otherwise enabled
-#define PAGE_ACCESSED  (1ull << 5)  // Set if page has been accessed
-#define PAGE_DIRTY     (1ull << 6)  // Set if page has been written to (lowest level in hierarchy only)
-#define PAGE_SIZE      (1ull << 7)  // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
-#define PAGE_GLOBAL    (1ull << 8)  // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
-#define PAGE_NOEXECUTE (1ull << 63) // Set if page shouldn't allow code execution
+#define PAGE_PRESENT   (1ull << 0)    // Set if loaded into physical memory
+#define PAGE_WRITE     (1ull << 1)    // Set if page can be written to, otherwise read-only
+#define PAGE_USER      (1ull << 2)    // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
+#define PAGE_PWT       (1ull << 3)    // Set for page-Level writethrough, otherwise writeback
+#define PAGE_PCD       (1ull << 4)    // Set if page-Level cache is disabled, otherwise enabled
+#define PAGE_ACCESSED  (1ull << 5)    // Set if page has been accessed
+#define PAGE_DIRTY     (1ull << 6)    // Set if page has been written to (lowest level in hierarchy only)
+#define PAGE_SIZE      (1ull << 7)    // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
+#define PAGE_GLOBAL    (1ull << 8)    // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
+#define PAGE_NOEXECUTE (1ull << 63)   // Set if page shouldn't allow code execution
+#define PAGE_COUNT     (511ull << 52) // Number of pages present within a table (only in levels above lowest in hierarchy)
 
 // Align up to nearest 4 KiB boundary
-#define ALIGN(x) (((uint64_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
+#define ALIGN(x) (((addr_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
 
 // Get lower half address of identity mapped virtual address
-#define PADDR(x) ((uint64_t)(x) & 0x7FFFFFFF)
+#define PADDR(x) ((addr_t)(x) & 0x7FFFFFFF)
 
 typedef struct
 {
-    uint64_t addr; // Memory region base address
+    uint64_t base; // Memory region base address
     uint64_t size; // Size of memory region in bytes
     uint32_t type; // Memory region type
     uint32_t attr; // ACPI v3 attributes
 } __attribute__((packed)) mmap_entry_t;
 
-typedef uint64_t frame_t;
-typedef uint64_t page_t;
+typedef uint64_t flag_t;
 typedef uint64_t page_entry_t;
-typedef uint64_t page_table_t;
+
+typedef struct
+{
+    page_entry_t entries[512];
+} page_table_t;
+
+static page_table_t *kernel_page_table_end;
+
+static addr_t *frame_stack;
+
+static mmap_entry_t *mmap_entry; // Pointer to current memory map entry
+static uint64_t mmap_size;       // Bytes remaining to process in current entry
+static addr_t mmap_addr;         // Physical address to process in current entry
+
+static void push_stack_frame(addr_t);
+static addr_t pop_stack_frame(void);
+static addr_t pop_mmap_frame(void);
+
+static status_t map_page(addr_t, flag_t, addr_t (*)(void));
+static status_t unmap_page(addr_t, void (*)(addr_t));
+
+static page_table_t *get_p4_table(addr_t);
+static page_table_t *get_p3_table(addr_t);
+static page_table_t *get_p2_table(addr_t);
+static page_table_t *get_p1_table(addr_t);
+
+static inline uint64_t get_p4e_index(addr_t);
+static inline uint64_t get_p3e_index(addr_t);
+static inline uint64_t get_p2e_index(addr_t);
+static inline uint64_t get_p1e_index(addr_t);
 
 extern const uint64_t kernel_start;
 extern const uint64_t kernel_data;
 extern const uint64_t kernel_end;
 
-static frame_t *frame_stack;
-
-static void push_frame(frame_t);
-static frame_t pop_frame();
-
-static void map_page(page_t *, uint64_t);
-static void unmap_page(page_t *);
-
-static inline page_table_t *get_p4(page_t *);
-static inline page_table_t *get_p3(page_t *);
-static inline page_table_t *get_p2(page_t *);
-static inline page_table_t *get_p1(page_t *);
-
-static inline page_entry_t *get_p4_entry(page_t *, page_table_t *);
-static inline page_entry_t *get_p3_entry(page_t *, page_table_t *);
-static inline page_entry_t *get_p2_entry(page_t *, page_table_t *);
-static inline page_entry_t *get_p1_entry(page_t *, page_table_t *);
-
 void init_memory(void *mmap)
 {
-    page_table_t *p4 = (uint64_t *)ALIGN(&kernel_end);
-    page_table_t *p3 = p4 + 0x200;
-    page_table_t *p2 = p3 + 0x200;
-    page_table_t *pn = p2 + 0x200;
+    kernel_page_table_end = (page_table_t *)ALIGN(&kernel_end);
+
+    page_table_t *p4 = kernel_page_table_end++;
+    page_table_t *p3 = kernel_page_table_end++;
+    page_table_t *p2 = kernel_page_table_end++;
     page_table_t *p1 = NULL;
 
+    // Zero out P4, P3, and P2
     memset(p4, 0, 0x3000);
 
-    p4[510] = PADDR(p4) | PAGE_PRESENT | PAGE_WRITE; // PML4 recursion
-    p4[511] = PADDR(p3) | PAGE_PRESENT | PAGE_WRITE; // Last 512 GiB
-    p3[510] = PADDR(p2) | PAGE_PRESENT | PAGE_WRITE; // Last 1 GiB
-
-    uint64_t pk_start = PADDR(ALIGN(&kernel_start));
-    uint64_t pk_data = PADDR(ALIGN(&kernel_data));
-    uint64_t pk_end = PADDR(ALIGN(&kernel_end));
+    p4->entries[510] = PADDR(p4) | PAGE_PRESENT | PAGE_WRITE; // P4 self reference
+    p4->entries[511] = PADDR(p3) | PAGE_PRESENT | PAGE_WRITE; // Last 512 GiB
+    p3->entries[510] = PADDR(p2) | PAGE_PRESENT | PAGE_WRITE; // Last 1 GiB
 
     // Identity map individual pages
-    for(uint64_t addr = 0; addr < pk_end; addr += 0x1000)
+    for(addr_t addr = 0; addr < PADDR(ALIGN(&kernel_end)); addr += 0x1000)
     {
-        page_entry_t *p2e = get_p2_entry((page_t *)addr, p2);
-        if(!(*p2e & PAGE_PRESENT))
+        uint64_t p2e_idx = get_p2e_index(addr);
+        if(!(p2->entries[p2e_idx] & PAGE_PRESENT))
         {
-            p1 = pn;
-            pn += 0x200;
-
+            p1 = kernel_page_table_end++;
+            p2->entries[p2e_idx] = PADDR(p1) | PAGE_PRESENT | PAGE_WRITE;
             memset(p1, 0, 0x1000);
-
-            *p2e = PADDR(p1) | PAGE_PRESENT | PAGE_WRITE;
         }
 
-        page_entry_t *p1e = get_p1_entry((page_t *)addr, p1);
-        if(addr >= pk_start && addr < pk_data)
+        uint64_t p1e_idx = get_p1e_index(addr);
+        if(addr >= PADDR(ALIGN(&kernel_start)) && addr < PADDR(ALIGN(&kernel_data)))
         {
             // Kernel code is read-only and executable
-            *p1e = addr | PAGE_PRESENT | PAGE_GLOBAL;
+            p1->entries[p1e_idx] = addr | PAGE_PRESENT | PAGE_GLOBAL;
         }
         else
         {
             // Data is writable and not executable
-            *p1e = addr | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL | PAGE_NOEXECUTE;
+            p1->entries[p1e_idx] = addr | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL | PAGE_NOEXECUTE;
         }
     }
 
@@ -113,75 +127,36 @@ void init_memory(void *mmap)
     load_pml4(PADDR(p4));
 
     // Bottom of frame stack starts immediately after kernel
-    frame_stack = (uint64_t *)ALIGN(&kernel_end);
+    frame_stack = (addr_t *)ALIGN(&kernel_end);
 
-    for(mmap_entry_t *entry = (mmap_entry_t *)mmap; entry->type; entry++)
+    // Initialize memory map pop frame function
+    mmap_entry = (mmap_entry_t *)mmap;
+    mmap_addr = ALIGN(mmap_entry->base);
+    mmap_size = mmap_entry->size;
+
+    // Add available memory map frames to stack
+    addr_t addr;
+    while(mmap_entry != NULL && (addr = pop_mmap_frame()) > 0)
     {
-        if(entry->type != MAP_AVAILABLE)
-        {
-            // Ignore memory ranges that aren't available
-            continue;
-        }
-
-        for(uint64_t addr = ALIGN(entry->addr), size = entry->size; size > 0xFFF; addr += 0x1000, size -= 0x1000)
-        {
-            if(addr < 0x100000)
-            {
-                // Ignore frames below 1 MiB
-                continue;
-            }
-
-            if(addr >= PADDR(&kernel_start) && addr < PADDR(pn))
-            {
-                // Ignore frames used for kernel and page tables
-                continue;
-            }
-
-            // Push physical address to frame stack
-            push_frame(addr);
-        }
+        push_stack_frame(addr);
     }
 }
 
-static void push_frame(frame_t frame)
+static void push_stack_frame(addr_t paddr)
 {
-    // Next 1 GiB if needed
-    page_table_t *p3 = get_p3(frame_stack);
-    page_entry_t *p3e = get_p3_entry(frame_stack, p3);
-    if(!(*p3e & PAGE_PRESENT))
+    status_t status = map_page((addr_t)frame_stack, PAGE_WRITE | PAGE_GLOBAL, pop_mmap_frame);
+    if(status != STATUS_OKAY)
     {
-        *p3e = frame | PAGE_PRESENT | PAGE_WRITE;
-        flush_page(p3);
-        return;
-    }
-
-    // Next 2 MiB if needed
-    page_table_t *p2 = get_p2(frame_stack);
-    page_entry_t *p2e = get_p2_entry(frame_stack, p2);
-    if(!(*p2e & PAGE_PRESENT))
-    {
-        *p2e = frame | PAGE_PRESENT | PAGE_WRITE;
-        flush_page(p2);
-        return;
-    }
-
-    // Next 4 KiB if needed
-    page_table_t *p1 = get_p1(frame_stack);
-    page_entry_t *p1e = get_p1_entry(frame_stack, p1);
-    if(!(*p1e & PAGE_PRESENT))
-    {
-        *p1e = frame | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL;
-        flush_page(p1);
         return;
     }
 
     // Fetch physical address and move stack frame pointer up
-    *frame_stack++ = frame;
+    *frame_stack++ = paddr;
 }
 
-static frame_t pop_frame()
+static addr_t pop_stack_frame(void)
 {
-    if(frame_stack > (uint64_t *)ALIGN(&kernel_end))
+    if(frame_stack > (addr_t *)ALIGN(&kernel_end))
     {
         // Move frame stack pointer down and fetch physical address
         return *--frame_stack;
@@ -191,94 +166,212 @@ static frame_t pop_frame()
     return 0;
 }
 
-static void map_page(page_t *page, uint64_t flags)
+static addr_t pop_mmap_frame(void)
 {
-    // Next 512 GiB if needed
-    page_table_t *p4 = get_p4(page);
-    page_entry_t *p4e = get_p4_entry(page, p4);
-    if(!(*p4e & PAGE_PRESENT))
+    while(mmap_entry != NULL && mmap_entry->type)
     {
-        *p4e = pop_frame() | PAGE_PRESENT | (flags & ~PAGE_SIZE & ~PAGE_GLOBAL);
+        if(mmap_entry->type != MAP_AVAILABLE || mmap_size < 0x1000)
+        {
+            mmap_entry++;
+            mmap_size = mmap_entry->size;
+            continue;
+        }
+
+        addr_t addr = mmap_addr;
+        mmap_addr += 0x1000; // Advance to next 4 KiB
+        mmap_size -= 0x1000; // Reduce remaining region size by 4 KiB
+
+        if(addr >= PADDR(&kernel_start) && addr < PADDR(kernel_page_table_end))
+        {
+            // Only claim frames above kernel and initial page tables
+            continue;
+        }
+
+        return addr;
+    }
+
+    mmap_entry = NULL;
+    return 0;
+}
+
+static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void))
+{
+    page_table_t *p4 = get_p4_table(vaddr);
+    page_table_t *p3 = get_p3_table(vaddr);
+    page_table_t *p2 = get_p2_table(vaddr);
+    page_table_t *p1 = get_p1_table(vaddr);
+
+    uint64_t p4e_idx = get_p4e_index(vaddr);
+    if(!(p4->entries[p4e_idx] & PAGE_PRESENT))
+    {
+        // Add P3 table for requested address
+        addr_t paddr = (*pop_frame_func)();
+        if(paddr == 0)
+        {
+            // No frames available
+            return ERROR_OUT_OF_MEMORY;
+        }
+
+        // Page size and global flags must be 0 for P4 entries
+        p4->entries[p4e_idx] = paddr | PAGE_PRESENT | (flags & ~PAGE_SIZE & ~PAGE_GLOBAL);
         flush_page(p4);
+        memset(p3, 0, 0x1000);
     }
 
-    // Next 1 GiB if needed
-    page_table_t *p3 = get_p3(page);
-    page_entry_t *p3e = get_p3_entry(page, p3);
-    if(!(*p3e & PAGE_PRESENT))
+    uint64_t p3e_idx = get_p3e_index(vaddr);
+    if(!(p3->entries[p3e_idx] & PAGE_PRESENT))
     {
-        *p3e = pop_frame() | PAGE_PRESENT | (flags & ~PAGE_SIZE);
+        // Add P2 table for requested address
+        addr_t paddr = (*pop_frame_func)();
+        if(paddr == 0)
+        {
+            // No frames available
+            return ERROR_OUT_OF_MEMORY;
+        }
+
+        // Do not allow 1 GiB pages
+        p3->entries[p3e_idx] = paddr | PAGE_PRESENT | (flags & ~PAGE_SIZE);
         flush_page(p3);
+        memset(p2, 0, 0x1000);
     }
 
-    // Next 2 MiB if needed
-    page_table_t *p2 = get_p2(page);
-    page_entry_t *p2e = get_p2_entry(page, p2);
-    if(!(*p2e & PAGE_PRESENT))
+    uint64_t p2e_idx = get_p2e_index(vaddr);
+    if(!(p2->entries[p2e_idx] & PAGE_PRESENT))
     {
-        *p2e = pop_frame() | PAGE_PRESENT | (flags & ~PAGE_SIZE);
+        // Add P1 table for requested address
+        addr_t paddr = (*pop_frame_func)();
+        if(paddr == 0)
+        {
+            // No frames available
+            return ERROR_OUT_OF_MEMORY;
+        }
+
+        // Do not allow 2 MiB pages (this may change in the future)
+        p2->entries[p2e_idx] = paddr | PAGE_PRESENT | (flags & ~PAGE_SIZE);
         flush_page(p2);
+        memset(p1, 0, 0x1000);
     }
 
-    // Next 4 KiB if needed
-    page_table_t *p1 = get_p1(page);
-    page_entry_t *p1e = get_p1_entry(page, p1);
-    if(!(*p1e & PAGE_PRESENT))
+    uint64_t p1e_idx = get_p1e_index(vaddr);
+    if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
-        *p1e = pop_frame() | PAGE_PRESENT | flags;
+        // Assign frame to page for requested address
+        addr_t paddr = (*pop_frame_func)();
+        if(paddr == 0)
+        {
+            // No frames available
+            return ERROR_OUT_OF_MEMORY;
+        }
+
+        p1->entries[p1e_idx] = paddr | PAGE_PRESENT | flags;
         flush_page(p1);
     }
+
+    return STATUS_OKAY;
 }
 
-static void unmap_page(page_t *page)
+static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
 {
-    page_table_t *p1 = get_p1(page);
-    page_entry_t *p1e = get_p1_entry(page, p1);
-    frame_t frame = *p1e & 0x7FFFF000;
-    if(*p1e & PAGE_PRESENT)
+    page_table_t *p1 = get_p1_table(vaddr);
+    uint64_t p1e_idx = get_p1e_index(vaddr);
+
+    if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
-        *p1e = ~PAGE_PRESENT;
-        flush_page(p1);
-        push_frame(frame);
+        // P1 entry is not present
+        return STATUS_OKAY;
     }
+
+    // Get physical address from P1 entry
+    addr_t paddr = p1->entries[p1e_idx] & 0x7FFFF000;
+
+    // Update P1 table
+    p1->entries[p1e_idx] = ~PAGE_PRESENT;
+    flush_page(p1);
+
+    // Put frame back on stack
+    (*push_frame_func)(paddr);
+
+    // TODO: Keep track of present entries in page tables
+    // TODO: Unmap page tables when present entry count reaches zero
+
+    return STATUS_OKAY;
 }
 
-static inline page_table_t *get_p4(page_t *page)
+static page_table_t *get_p4_table(addr_t vaddr)
 {
-    return (page_table_t *)(((uint64_t)page & 0xFFFF000000000000) | 0xFF7FBFDFE000);
+    // Keep sign extend
+    uint64_t p4 = vaddr & 0xFFFF000000000000;
+
+    // Reference P4 table recursively
+    p4 |= 510ull << 39;
+    p4 |= 510ull << 30;
+    p4 |= 510ull << 21;
+    p4 |= 510ull << 12;
+
+    return (page_table_t *)p4;
 }
 
-static inline page_table_t *get_p3(page_t *page)
+static page_table_t *get_p3_table(addr_t vaddr)
 {
-    return (page_table_t *)(((uint64_t)page & 0xFFFF000000000000) | 0xFF7FBFC00000 | ((uint64_t)page >> 27 & 0x1FF000));
+    // Keep sign extend
+    uint64_t p3 = vaddr & 0xFFFF000000000000;
+
+    // Reference P4 table recursively
+    p3 |= 510ull << 39;
+    p3 |= 510ull << 30;
+    p3 |= 510ull << 21;
+
+    // Get index of P3 table
+    p3 |= vaddr >> 27 & 0x1FF000;
+
+    return (page_table_t *)p3;
 }
 
-static inline page_table_t *get_p2(page_t *page)
+static page_table_t *get_p2_table(addr_t vaddr)
 {
-    return (page_table_t *)(((uint64_t)page & 0xFFFF000000000000) | 0xFF7F80000000 | ((uint64_t)page >> 18 & 0x3FFFF000));
+    // Keep sign extend
+    uint64_t p3 = vaddr & 0xFFFF000000000000;
+
+    // Reference P4 table recursively
+    p3 |= 510ull << 39;
+    p3 |= 510ull << 30;
+
+    // Get index of P3 and P2 tables
+    p3 |= vaddr >> 18 & 0x3FFFF000;
+
+    return (page_table_t *)p3;
 }
 
-static inline page_table_t *get_p1(page_t *page)
+static page_table_t *get_p1_table(addr_t vaddr)
 {
-    return (page_table_t *)(((uint64_t)page & 0xFFFF000000000000) | 0xFF0000000000 | ((uint64_t)page >> 9 & 0x7FFFFFF000));
+    // Keep sign extend
+    uint64_t p3 = vaddr & 0xFFFF000000000000;
+
+    // Reference P4 table recursively
+    p3 |= 510ull << 39;
+
+    // Get index of P3, P2, and P1 tables
+    p3 |= vaddr >> 9 & 0x7FFFFFF000;
+
+    return (page_table_t *)p3;
 }
 
-static inline page_entry_t *get_p4_entry(page_t *page, page_table_t *table)
+static inline uint64_t get_p4e_index(addr_t vaddr)
 {
-    return (page_entry_t *)&table[((uint64_t)page >> 39) & 0x1FF];
+    return (uint64_t)(vaddr >> 39 & 0x1FF);
 }
 
-static inline page_entry_t *get_p3_entry(page_t *page, page_table_t *table)
+static inline uint64_t get_p3e_index(addr_t vaddr)
 {
-    return (page_entry_t *)&table[((uint64_t)page >> 30) & 0x1FF];
+    return (uint64_t)(vaddr >> 30 & 0x1FF);
 }
 
-static inline page_entry_t *get_p2_entry(page_t *page, page_table_t *table)
+static inline uint64_t get_p2e_index(addr_t vaddr)
 {
-    return (page_entry_t *)&table[((uint64_t)page >> 21) & 0x1FF];
+    return (uint64_t)(vaddr >> 21 & 0x1FF);
 }
 
-static inline page_entry_t *get_p1_entry(page_t *page, page_table_t *table)
+static inline uint64_t get_p1e_index(addr_t vaddr)
 {
-    return (page_entry_t *)&table[((uint64_t)page >> 12) & 0x1FF];
+    return (uint64_t)(vaddr >> 12 & 0x1FF);
 }
