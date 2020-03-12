@@ -13,18 +13,18 @@ SECTIONS
 		SHORT(0xAA55)
 		*(.text .text*)
 		*(.rodata .rodata*)
-	} = 0
+	}
 
 	.data :
 	{
 		*(.data)
-	} = 0
+	}
 
 	.bss :
 	{
 		*(.bss)
 		*(COMMON)
-	} = 0
+	}
 
 	/DISCARD/ :
 	{

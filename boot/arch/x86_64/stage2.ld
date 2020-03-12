@@ -9,18 +9,18 @@ SECTIONS
 	{
 		*(.text .text*)
 		*(.rodata .rodata*)
-	} = 0
+	}
 
 	.data :
 	{
 		*(.data)
-	} = 0
+	}
 
 	.bss :
 	{
 		*(.bss)
 		*(COMMON)
-	} = 0
+	}
 
 	/DISCARD/ :
 	{
