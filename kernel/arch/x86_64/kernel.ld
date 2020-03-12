@@ -10,20 +10,20 @@ SECTIONS
 		kernel_start = .;
 		*(.text .text*)
 		*(.rodata .rodata*)
-	} = 0
+	}
 
 	.data ALIGN(4K) : AT(ADDR(.data) - 0xFFFFFFFF80000000)
 	{
 		kernel_data = .;
 		*(.data)
-	} = 0
+	}
 
 	.bss ALIGN(4K) : AT(ADDR(.bss) - 0xFFFFFFFF80000000)
 	{
 		*(COMMON)
 		*(.bss)
 		kernel_end = .;
-	} = 0
+	}
 
 	/DISCARD/ :
 	{
