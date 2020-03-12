@@ -8,6 +8,7 @@
 #include <cpu.h>
 #include <memory.h>
 #include <status.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -20,17 +21,16 @@
 #define MMT_BAD         5 // Bad (DO NOT USE)
 
 // Page Translation Table Entry Field Bits
-#define PAGE_PRESENT   (1ull << 0)    // Set if loaded into physical memory
-#define PAGE_WRITE     (1ull << 1)    // Set if page can be written to, otherwise read-only
-#define PAGE_USER      (1ull << 2)    // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
-#define PAGE_PWT       (1ull << 3)    // Set for page-Level writethrough, otherwise writeback
-#define PAGE_PCD       (1ull << 4)    // Set if page-Level cache is disabled, otherwise enabled
-#define PAGE_ACCESSED  (1ull << 5)    // Set if page has been accessed
-#define PAGE_DIRTY     (1ull << 6)    // Set if page has been written to (lowest level in hierarchy only)
-#define PAGE_SIZE      (1ull << 7)    // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
-#define PAGE_GLOBAL    (1ull << 8)    // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
-#define PAGE_NOEXECUTE (1ull << 63)   // Set if page shouldn't allow code execution
-#define PAGE_COUNT     (511ull << 52) // Number of pages present within a table (only in levels above lowest in hierarchy)
+#define PAGE_PRESENT   (1ull << 0)  // Set if loaded into physical memory
+#define PAGE_WRITE     (1ull << 1)  // Set if page can be written to, otherwise read-only
+#define PAGE_USER      (1ull << 2)  // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
+#define PAGE_PWT       (1ull << 3)  // Set for page-Level writethrough, otherwise writeback
+#define PAGE_PCD       (1ull << 4)  // Set if page-Level cache is disabled, otherwise enabled
+#define PAGE_ACCESSED  (1ull << 5)  // Set if page has been accessed
+#define PAGE_DIRTY     (1ull << 6)  // Set if page has been written to (lowest level in hierarchy only)
+#define PAGE_SIZE      (1ull << 7)  // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
+#define PAGE_GLOBAL    (1ull << 8)  // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
+#define PAGE_NOEXECUTE (1ull << 63) // Set if page shouldn't allow code execution
 
 // Align up to nearest 4 KiB boundary
 #define ALIGN(x) (((addr_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
@@ -79,6 +79,10 @@ static inline uint64_t get_p3e_index(addr_t);
 static inline uint64_t get_p2e_index(addr_t);
 static inline uint64_t get_p1e_index(addr_t);
 
+static inline void inc_entry_count(page_entry_t *);
+static inline void dec_entry_count(page_entry_t *);
+static inline bool has_entries(page_entry_t);
+
 extern const uint64_t kernel_start;
 extern const uint64_t kernel_data;
 extern const uint64_t kernel_end;
@@ -99,6 +103,9 @@ void init_memory(void *mmap)
     p4->entries[511] = PADDR(p3) | PAGE_PRESENT | PAGE_WRITE; // Last 512 GiB
     p3->entries[510] = PADDR(p2) | PAGE_PRESENT | PAGE_WRITE; // Last 1 GiB
 
+    // Increase P3 present entry count in P4 entry
+    inc_entry_count(&p4->entries[511]);
+
     // Identity map individual pages
     for(addr_t addr = 0; addr < PADDR(ALIGN(&kernel_end)); addr += 0x1000)
     {
@@ -108,6 +115,9 @@ void init_memory(void *mmap)
             p1 = kernel_page_table_end++;
             p2->entries[p2e_idx] = PADDR(p1) | PAGE_PRESENT | PAGE_WRITE;
             memset(p1, 0, 0x1000);
+
+            // Increase present P2 entry count in P3 entry
+            inc_entry_count(&p3->entries[510]);
         }
 
         uint64_t p1e_idx = get_p1e_index(addr);
@@ -121,6 +131,9 @@ void init_memory(void *mmap)
             // Data is writable and not executable
             p1->entries[p1e_idx] = addr | PAGE_PRESENT | PAGE_WRITE | PAGE_GLOBAL | PAGE_NOEXECUTE;
         }
+
+        // Increase P1 present entry count in P2 entry
+        inc_entry_count(&p2->entries[p2e_idx]);
     }
 
     // Load new page tables
@@ -140,6 +153,28 @@ void init_memory(void *mmap)
     {
         push_stack_frame(addr);
     }
+}
+
+status_t kmalloc(addr_t vaddr, bool write, bool user)
+{
+    flag_t flags = 0;
+
+    if(write)
+    {
+        flags |= PAGE_WRITE;
+    }
+
+    if(user)
+    {
+        flags |= PAGE_USER;
+    }
+
+    return map_page(vaddr, flags, pop_stack_frame);
+}
+
+status_t kfree(addr_t vaddr)
+{
+    return unmap_page(vaddr, push_stack_frame);
 }
 
 static void push_stack_frame(addr_t paddr)
@@ -181,7 +216,7 @@ static addr_t pop_mmap_frame(void)
         mmap_addr += 0x1000; // Advance to next 4 KiB
         mmap_size -= 0x1000; // Reduce remaining region size by 4 KiB
 
-        if(addr >= PADDR(&kernel_start) && addr < PADDR(kernel_page_table_end))
+        if(addr < PADDR(kernel_page_table_end))
         {
             // Only claim frames above kernel and initial page tables
             continue;
@@ -233,6 +268,9 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         p3->entries[p3e_idx] = paddr | PAGE_PRESENT | (flags & ~PAGE_SIZE);
         flush_page(p3);
         memset(p2, 0, 0x1000);
+
+        // Increase P3 present entry count in P4 entry
+        inc_entry_count(&p4->entries[p4e_idx]);
     }
 
     uint64_t p2e_idx = get_p2e_index(vaddr);
@@ -250,6 +288,9 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         p2->entries[p2e_idx] = paddr | PAGE_PRESENT | (flags & ~PAGE_SIZE);
         flush_page(p2);
         memset(p1, 0, 0x1000);
+
+        // Increase P2 present entry count in P3 entry
+        inc_entry_count(&p3->entries[p3e_idx]);
     }
 
     uint64_t p1e_idx = get_p1e_index(vaddr);
@@ -265,6 +306,9 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
 
         p1->entries[p1e_idx] = paddr | PAGE_PRESENT | flags;
         flush_page(p1);
+
+        // Increase P1 present entry count in P2 entry
+        inc_entry_count(&p2->entries[p2e_idx]);
     }
 
     return STATUS_OKAY;
@@ -272,9 +316,9 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
 
 static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
 {
+    // Unmap page
     page_table_t *p1 = get_p1_table(vaddr);
     uint64_t p1e_idx = get_p1e_index(vaddr);
-
     if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
         // P1 entry is not present
@@ -291,8 +335,74 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     // Put frame back on stack
     (*push_frame_func)(paddr);
 
-    // TODO: Keep track of present entries in page tables
-    // TODO: Unmap page tables when present entry count reaches zero
+    // Unmap P1 table if no more entries present
+    page_table_t *p2 = get_p2_table(vaddr);
+    uint64_t p2e_idx = get_p2e_index(vaddr);
+
+    // Decrease P1 present entry count in P2 entry
+    dec_entry_count(&p2->entries[p2e_idx]);
+
+    if(has_entries(p2->entries[p2e_idx]))
+    {
+        // There are still P1 entries present
+        return STATUS_OKAY;
+    }
+
+    // Get physical address from P2 entry
+    paddr = p2->entries[p2e_idx] & 0x7FFFF000;
+
+    // Update P2 table
+    p2->entries[p2e_idx] = ~PAGE_PRESENT;
+    flush_page(p2);
+
+    // Put frame back on stack
+    (*push_frame_func)(paddr);
+
+    // Unmap P2 table if no more entries present
+    page_table_t *p3 = get_p3_table(vaddr);
+    uint64_t p3e_idx = get_p3e_index(vaddr);
+
+    // Decrease P2 present entry count in P3 entry
+    dec_entry_count(&p3->entries[p3e_idx]);
+
+    if(has_entries(p3->entries[p3e_idx]))
+    {
+        // There are still P2 entries present
+        return STATUS_OKAY;
+    }
+
+    // Get physical address from P3 entry
+    paddr = p3->entries[p3e_idx] & 0x7FFFF000;
+
+    // Update P3 table
+    p3->entries[p3e_idx] = ~PAGE_PRESENT;
+    flush_page(p3);
+
+    // Put frame back on stack
+    (*push_frame_func)(paddr);
+
+    // Unmap P3 table if no more entries present
+    page_table_t *p4 = get_p4_table(vaddr);
+    uint64_t p4e_idx = get_p4e_index(vaddr);
+
+    // Decrease P3 present entry count in P4 entry
+    dec_entry_count(&p4->entries[p4e_idx]);
+
+    if(has_entries(p4->entries[p4e_idx]))
+    {
+        // There are still P2 entries present
+        return STATUS_OKAY;
+    }
+
+    // Get physical address from P3 entry
+    paddr = p4->entries[p4e_idx] & 0x7FFFF000;
+
+    // Update P3 table
+    p4->entries[p4e_idx] = ~PAGE_PRESENT;
+    flush_page(p4);
+
+    // Put frame back on stack
+    (*push_frame_func)(paddr);
 
     return STATUS_OKAY;
 }
@@ -374,4 +484,31 @@ static inline uint64_t get_p2e_index(addr_t vaddr)
 static inline uint64_t get_p1e_index(addr_t vaddr)
 {
     return (uint64_t)(vaddr >> 12 & 0x1FF);
+}
+
+static inline void inc_entry_count(page_entry_t *entry)
+{
+    uint64_t count = (*entry >> 52 & 0x1FF) + 1;
+
+    // Zero out current count;
+    *entry &= ~(511ull << 52);
+
+    // Add new count
+    *entry |= count << 52;
+}
+
+static inline void dec_entry_count(page_entry_t *entry)
+{
+    uint64_t count = (*entry >> 52 & 0x1FF) - 1;
+
+    // Zero out current count;
+    *entry &= ~(511ull << 52);
+
+    // Add new count
+    *entry |= count << 52;
+}
+
+static inline bool has_entries(page_entry_t entry)
+{
+    return (entry & (511ull << 52)) != 0;
 }
