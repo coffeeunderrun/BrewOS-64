@@ -45,7 +45,7 @@ LOAD_OBJS := loader/stage2.s loader/bios.s loader/ext2.s
 LOAD_OBJS := $(addprefix o/, $(addsuffix .o, $(LOAD_OBJS)))
 LOAD_DEPS := $(LOAD_OBJS:.o=.d)
 
-KERN_OBJS := kernel/entry.s kernel/main.c kernel/cpu.s kernel/memory.c
+KERN_OBJS := kernel/entry.s kernel/main.c kernel/interrupts.s kernel/interrupts.c kernel/memory.c
 KERN_OBJS := $(addprefix o/, $(addsuffix .o, $(KERN_OBJS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
 

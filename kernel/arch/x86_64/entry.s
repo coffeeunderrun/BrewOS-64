@@ -2,13 +2,13 @@ bits 64
 
 global entry
 
-extern main
+extern kmain
 
 section .text
 
 entry:
     mov rsp, qword kernel_stack_top
-    jmp main
+    jmp kmain
 
 section .bss
 
