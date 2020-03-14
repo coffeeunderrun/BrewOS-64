@@ -1,8 +1,10 @@
+#include <interrupts.h>
 #include <memory.h>
-#include <stdint.h>
 
-void main(void *mmap)
+void kmain(void *mmap)
 {
+    init_interrupts();
+
     init_memory(mmap);
 
     while(1);

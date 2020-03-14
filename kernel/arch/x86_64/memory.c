@@ -7,10 +7,7 @@
 
 #include <cpu.h>
 #include <memory.h>
-#include <status.h>
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
 // Memory Map Types

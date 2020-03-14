@@ -143,8 +143,7 @@ bits 64
 
 trampoline:
     ; Load GDT register again using higher half pointer
-    mov rax, vo
-    add rax, gdt.high
+    mov rax, qword gdt.high + vo
     lgdt [rax]
 
     ; Load ELF program segments into proper locations
@@ -165,8 +164,7 @@ trampoline:
 
     ; TODO: Pass memory map entry count to kernel
     ; Pass memory map pointer to kernel
-    mov rdi, vo
-    add rdi, mm
+    mov rdi, qword mm + vo
 
     ; Jump to entry point in higher half
     jmp qword [kb + 0x18]
