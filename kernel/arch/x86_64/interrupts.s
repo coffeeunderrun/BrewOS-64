@@ -29,16 +29,12 @@ irq%1:
     jmp irq_stub
 %endmacro
 
-; 1st parameter is address of ISR
-; 2nd parameter is segment selector (optional)
-; 3rd parameter is flags (optional)
-; 4th parameter is IST offset (optional)
 %macro LOAD_IDT_ENTRY 1-4 0x8, 0x8E, 0
-    mov rax, qword irq%1
-    mov cx, %2
-    mov dh, %3
-    mov dl, %4
-    mov rdi, qword idt + (%1 * 16)
+    mov rax, qword irq%1           ; Address of ISR
+    mov cx, %2                     ; Segment selector
+    mov dh, %3                     ; Flags
+    mov dl, %4                     ; IST offset
+    mov rdi, qword idt + (%1 * 16) ; Point to entry in IDT
     call load_idt_entry
 %endmacro
 
@@ -99,9 +95,6 @@ load_idt:
     mov rdi, qword idt
     rep stosq
 
-    ; Load IDT entries (each entry is 16 bytes)
-    mov rdi, qword idt
-
     LOAD_IDT_ENTRY 0  ; Divide by zero error
     LOAD_IDT_ENTRY 1  ; Debug
     LOAD_IDT_ENTRY 2  ; NMI
@@ -160,7 +153,7 @@ load_idt:
     sti
     ret
 
-; Add entry to IDT
+; Add descriptor entry to IDT
 ; Address of ISR in RAX
 ; Segment selector in CX
 ; IST offset in DL
@@ -208,7 +201,7 @@ irq_stub:
     push rbx
     push rax
 
-    ; Pass pointer to register structure to IRQ handler
+    ; Pass register structure pointer to IRQ handler
     mov rdi, rsp
     call irq_handler
 
