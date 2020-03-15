@@ -85,7 +85,7 @@ extern const uint64_t kernel_start;
 extern const uint64_t kernel_data;
 extern const uint64_t kernel_end;
 
-void init_memory(void *mmap)
+void init_memory(addr_t mmap)
 {
     kernel_page_table_end = (page_table_t *)ALIGN(&kernel_end);
 
@@ -175,8 +175,9 @@ status_t kfree(addr_t vaddr)
     return unmap_page(vaddr, push_stack_frame);
 }
 
-void page_fault_handler(irq_registers_t regs)
+status_t page_fault_handler(irq_registers_t *regs)
 {
+    return STATUS_OKAY;
 }
 
 static void push_stack_frame(addr_t paddr)
