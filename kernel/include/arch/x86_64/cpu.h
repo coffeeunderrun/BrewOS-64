@@ -1,7 +1,7 @@
 #ifndef X86_64_CPU_H
 #define X86_64_CPU_H
 
-#include <types.h>
+#include <sys/types.h>
 
 extern void flush_page(void *);
 
