@@ -1,3 +1,9 @@
+/*
+ * Assumptions
+ * - Loader disabled interrupts
+ * - Loader initialized GDT
+ */
+
 #include <interrupts.h>
 #include <memory.h>
 

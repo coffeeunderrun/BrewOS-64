@@ -2,6 +2,10 @@
 
 void *memcpy(void *d, const void *s, size_t n)
 {
-    for(char *pd = (char *)d, *ps = (char *)s; n; *pd++ = *ps++, n--);
+    char *pd = (char *)d;
+    char *ps = (char *)s;
+
+    for( ; n; n--, *pd++ = *ps++);
+
     return d;
 }

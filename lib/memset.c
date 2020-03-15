@@ -2,6 +2,9 @@
 
 void *memset(void *s, int c, size_t n)
 {
-    for(char *p = (char *)s; n; *p++ = (char)c, n--);
+    char *p = (char *)s;
+
+    for( ; n; n--, *p++ = (char)c);
+
     return s;
 }
