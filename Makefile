@@ -18,7 +18,7 @@ AR := $(TARGET)-elf-ar
 CC     := $(TARGET)-elf-gcc
 CCFLAG := -std=gnu17 -ffreestanding -nostdlib -zmax-page-size=0x1000 -Wall -Wextra \
 	-masm=intel -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
-CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ilib/include -Ikernel/arch/$(TARGET)/include
+CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ikernel/include/arch -Ilib/include
 
 ifdef DEBUG
 CCKERN += -gdwarf-2 -O0

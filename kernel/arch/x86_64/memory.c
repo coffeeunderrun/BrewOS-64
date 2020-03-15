@@ -5,10 +5,11 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
-#include <cpu.h>
 #include <memory.h>
-#include <stddef.h>
+#include <status.h>
 #include <string.h>
+#include <x86_64/cpu.h>
+#include <x86_64/interrupts.h>
 
 // Memory Map Types
 #define MAP_AVAILABLE   1 // Available
@@ -172,6 +173,10 @@ status_t kmalloc(addr_t vaddr, bool write, bool user)
 status_t kfree(addr_t vaddr)
 {
     return unmap_page(vaddr, push_stack_frame);
+}
+
+void page_fault_handler(irq_registers_t regs)
+{
 }
 
 static void push_stack_frame(addr_t paddr)
