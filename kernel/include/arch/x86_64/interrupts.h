@@ -1,7 +1,7 @@
 #ifndef X86_64_INTERRUPTS_H
 #define X86_64_INTERRUPTS_H
 
-#include <types.h>
+#include <sys/types.h>
 
 typedef struct irq_registers
 {
