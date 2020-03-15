@@ -101,18 +101,32 @@ stage2:
     mov edx, p4
     mov cr3, edx
 
-    ; Set PAE and PGE bit
+    ; Prepare for long mode
+    mov eax, 0x80000001
+    cpuid
+    mov [cpuid_c], ecx
+    mov [cpuid_d], edx
+    bt dword [cpuid_d], 29 ; Is long mode supported?
+    jnc error_incompatible
+
     mov eax, cr4
-    or eax, 0xA0
+    bts eax, 5             ; Enable Physical Address Extension
+    bt dword [cpuid_d], 13 ; Are global pages supported?
+    jnc .no_global_pages
+    bts eax, 7             ; Enable global pages
+.no_global_pages:
     mov cr4, eax
 
-    ; Set LME and NXE bit
     mov ecx, 0xC0000080
     rdmsr
-    or eax, 0x900
+    bts eax, 8             ; Enable long mode
+    bt dword [cpuid_d], 20 ; Is NX supported?
+    jnc .no_nx
+    bts eax, 11            ; Enable NX
+.no_nx:
     wrmsr
 
-    ; Set PG, WP, and PE bit
+    ; Enable paging, write protect, and protected mode
     mov eax, cr0
     or eax, 0x80010001
     mov cr0, eax
@@ -127,17 +141,26 @@ stage2:
     ; Jump to long mode
     jmp gdt.code:trampoline
 
+error_incompatible:
+    mov si, msg.incompatible
+    call print
+    jmp reboot
+
 error_not_found:
     mov si, msg.not_found
     call print
     jmp reboot
+
+cpuid_c: dd 0
+cpuid_d: dd 0
 
 filesize: dq 0
 filename: db "brewkern"
 .length:  equ $ - filename
 
 msg:
-.not_found: db "Kernel not found.", 13, 10, 0
+.incompatible: db "Incompatible system.", 13, 10, 0
+.not_found:    db "Kernel not found.", 13, 10, 0
 
 bits 64
 
