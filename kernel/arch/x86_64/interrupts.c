@@ -1,4 +1,4 @@
-#include <interrupts.h>
+#include <x86_64/interrupts.h>
 
 extern void init_pics(void);
 extern void load_idt(void);

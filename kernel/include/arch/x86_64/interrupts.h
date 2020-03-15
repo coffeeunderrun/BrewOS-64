@@ -1,9 +1,9 @@
-#ifndef CPU_H
-#define CPU_H
+#ifndef X86_64_INTERRUPTS_H
+#define X86_64_INTERRUPTS_H
 
-#include <stdint.h>
+#include <types.h>
 
-struct irq_registers
+typedef struct irq_registers
 {
     uint64_t rax;
     uint64_t rbx;
@@ -27,12 +27,6 @@ struct irq_registers
     uint64_t rflags;
     uint64_t rsp;
     uint64_t ss;
-};
+} irq_registers_t;
 
-extern void flush_page(void *);
-
-extern void flush_tlb(void);
-
-extern void load_pml4(uint64_t);
-
-#endif // CPU_H
+#endif // X86_64_INTERRUPTS_H
