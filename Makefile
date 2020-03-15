@@ -16,7 +16,7 @@ AR := $(TARGET)-elf-ar
 
 # COMPILER
 CC     := $(TARGET)-elf-gcc
-CCFLAG := -std=gnu17 -ffreestanding -nostdlib -zmax-page-size=4096 -Wall \
+CCFLAG := -std=gnu17 -ffreestanding -nostdlib -zmax-page-size=0x1000 -Wall -Wextra \
 	-masm=intel -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow
 CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ilib/include -Ikernel/arch/$(TARGET)/include
 
@@ -37,19 +37,23 @@ ifndef DEBUG
 LDFLAG += -s
 endif # DEBUG
 
-BOOT_OBJS := boot/stage1.s boot/bios.s boot/ext2.s
+BOOT_SRCS := stage1.s bios.s ext2.s
+BOOT_OBJS := $(addprefix boot/, $(BOOT_SRCS))
 BOOT_OBJS := $(addprefix o/, $(addsuffix .o, $(BOOT_OBJS)))
 BOOT_DEPS := $(BOOT_OBJS:.o=.d)
 
-LOAD_OBJS := loader/stage2.s loader/bios.s loader/ext2.s
+LOAD_SRCS := stage2.s bios.s ext2.s
+LOAD_OBJS := $(addprefix loader/, $(LOAD_SRCS))
 LOAD_OBJS := $(addprefix o/, $(addsuffix .o, $(LOAD_OBJS)))
 LOAD_DEPS := $(LOAD_OBJS:.o=.d)
 
-KERN_OBJS := kernel/entry.s kernel/main.c kernel/interrupts.s kernel/interrupts.c kernel/memory.c
+KERN_SRCS := entry.s cpu.s interrupts.s interrupts.c main.c memory.c
+KERN_OBJS := $(addprefix kernel/, $(KERN_SRCS))
 KERN_OBJS := $(addprefix o/, $(addsuffix .o, $(KERN_OBJS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
 
-LIBK_OBJS := libk/memcpy.c libk/memset.c
+LIBK_SRCS := memcmp.c memcpy.c memmove.c memset.c
+LIBK_OBJS := $(addprefix libk/, $(LIBK_SRCS))
 LIBK_OBJS := $(addprefix o/, $(addsuffix .o, $(LIBK_OBJS)))
 LIBK_DEPS := $(LIBK_OBJS:.o=.d)
 

@@ -6,6 +6,6 @@
 
 typedef struct irq_registers irq_registers_t;
 
-void init_interrupts();
+void init_interrupts(void);
 
 #endif // INTERRUPTS_H

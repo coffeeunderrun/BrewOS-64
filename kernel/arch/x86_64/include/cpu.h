@@ -29,20 +29,10 @@ struct irq_registers
     uint64_t ss;
 };
 
-static inline void load_pml4(uint64_t addr)
-{
-    asm volatile ("mov cr3, %0" :: "r"(addr) : "memory");
-}
+extern void flush_page(void *);
 
-static inline void flush_tlb()
-{
-    asm volatile ("mov rax, cr3" ::: "rax", "memory");
-    asm volatile ("mov cr3, rax" ::: "rax", "memory");
-}
+extern void flush_tlb(void);
 
-static inline void flush_page(void *p)
-{
-    asm volatile ("invlpg [%0]" :: "r"(p) : "memory");
-}
+extern void load_pml4(uint64_t);
 
 #endif // CPU_H
