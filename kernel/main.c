@@ -8,11 +8,11 @@
 #include <interrupts.h>
 #include <memory.h>
 
-void kmain(addr_t mmap)
+void kmain(void *mmp)
 {
     init_interrupts();
 
-    init_memory(mmap);
+    init_memory(mmp);
 
     while(1);
 }

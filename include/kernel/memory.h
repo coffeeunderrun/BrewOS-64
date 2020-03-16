@@ -2,13 +2,14 @@
 #define MEMORY_H
 
 #include <interrupts.h>
+#include <status.h>
 #include <sys/types.h>
 
-void init_memory(addr_t);
+void init_memory(void *);
 
-status_t kmalloc(addr_t, bool, bool);
+status_t kmalloc(void *, bool, bool, bool);
 
-status_t kfree(addr_t);
+status_t kfree(void *);
 
 status_t page_fault_handler(irq_registers_t *);
 

@@ -16,8 +16,9 @@ AR := $(TARGET)-elf-ar
 
 # COMPILER
 CC     := $(TARGET)-elf-gcc
-CCFLAG := -std=gnu17 -ffreestanding -nostdlib -zmax-page-size=0x1000 -Wall -Wextra -masm=intel -mno-red-zone
-CCKERN := -m64 -mcmodel=kernel -Lo -Ikernel/include -Ikernel/include/arch -Ilib/include
+CCFLAG := -std=gnu17 -ffreestanding -nostdlib -masm=intel -mno-red-zone \
+	-zmax-page-size=0x1000 -Wall -Wextra
+CCKERN := -m64 -mcmodel=kernel -Iinclude/kernel -Iinclude/lib -Lo
 
 ifdef DEBUG
 CCKERN += -gdwarf-2 -O0
@@ -51,12 +52,15 @@ KERN_OBJS := $(addprefix kernel/, $(KERN_SRCS))
 KERN_OBJS := $(addprefix o/, $(addsuffix .o, $(KERN_OBJS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
 
-LIBK_SRCS := memcmp.c memcpy.c memmove.c memset.c
+LIBK_SRCS := stdlib/heap.c
+LIBK_SRCS += string/memcmp.c string/memcpy.c string/memmove.c string/memset.c
+LIBK_SRCS += kglue.c
 LIBK_OBJS := $(addprefix libk/, $(LIBK_SRCS))
 LIBK_OBJS := $(addprefix o/, $(addsuffix .o, $(LIBK_OBJS)))
 LIBK_DEPS := $(LIBK_OBJS:.o=.d)
 
-DIRS := o o/boot o/loader o/kernel o/kernel/mem o/libk root
+DIRS := o o/boot o/loader o/kernel root
+DIRS += o/libk o/libk/stdlib o/libk/string o/libk/mman
 
 all: brewdisk.img
 

@@ -22,6 +22,9 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+		heap_start = .;
+		. += 0x8000;
+		heap_end = .;
 		kernel_end = .;
 	}
 
