@@ -8,8 +8,8 @@
 #include <memory.h>
 #include <status.h>
 #include <string.h>
-#include <x86_64/cpu.h>
-#include <x86_64/interrupts.h>
+#include <arch/x86_64/cpu.h>
+#include <arch/x86_64/interrupts.h>
 
 // Memory Map Types
 #define MAP_AVAILABLE   1 // Available
@@ -44,6 +44,7 @@ typedef struct
     uint32_t attr; // ACPI v3 attributes
 } __attribute__((packed)) mmap_entry_t;
 
+typedef uint64_t addr_t;
 typedef uint64_t flag_t;
 typedef uint64_t page_entry_t;
 
@@ -85,7 +86,7 @@ extern const uint64_t kernel_start;
 extern const uint64_t kernel_data;
 extern const uint64_t kernel_end;
 
-void init_memory(addr_t mmap)
+void init_memory(void *mmap)
 {
     kernel_page_table_end = (page_table_t *)ALIGN(&kernel_end);
 
@@ -153,9 +154,14 @@ void init_memory(addr_t mmap)
     }
 }
 
-status_t kmalloc(addr_t vaddr, bool write, bool user)
+status_t kmalloc(void *p, bool execute, bool write, bool user)
 {
     flag_t flags = 0;
+
+    if(!execute)
+    {
+        flags |= PAGE_NOEXECUTE;
+    }
 
     if(write)
     {
@@ -167,12 +173,12 @@ status_t kmalloc(addr_t vaddr, bool write, bool user)
         flags |= PAGE_USER;
     }
 
-    return map_page(vaddr, flags, pop_stack_frame);
+    return map_page((addr_t)p, flags, pop_stack_frame);
 }
 
-status_t kfree(addr_t vaddr)
+status_t kfree(void *p)
 {
-    return unmap_page(vaddr, push_stack_frame);
+    return unmap_page((addr_t)p, push_stack_frame);
 }
 
 status_t page_fault_handler(irq_registers_t *regs)

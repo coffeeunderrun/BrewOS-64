@@ -1,6 +1,7 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
+#include <status.h>
 #include <sys/types.h>
 
 typedef struct irq_registers irq_registers_t;
