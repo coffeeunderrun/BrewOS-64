@@ -6,8 +6,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef int64_t status_t;
-
-typedef uint64_t addr_t;
+typedef int64_t off_t;
 
 #endif // SYS_TYPES_H
