@@ -1,6 +1,6 @@
 #include <sys/mman.h>
 
-void *mmap(void *p, size_t sz, int pr, int fl, int fd, off_t of)
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 {
     return NULL;
 }

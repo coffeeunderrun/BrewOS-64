@@ -3,12 +3,12 @@
 
 #include <sys/types.h>
 
-void *calloc(size_t, size_t);
+void *calloc(size_t el_cnt, size_t el_size);
 
-void free(void *);
+void free(void *addr);
 
-void *malloc(size_t);
+void *malloc(size_t size);
 
-void *realloc(void *, size_t);
+void *realloc(void *addr, size_t size);
 
 #endif // STDLIB_H
