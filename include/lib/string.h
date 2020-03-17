@@ -3,12 +3,12 @@
 
 #include <sys/types.h>
 
-int memcmp(const void *, const void *, size_t);
+int memcmp(const void *a, const void *b, size_t cnt);
 
-void *memcpy(void *, const void *, size_t);
+void *memcpy(void *dst, const void *src, size_t cnt);
 
-void *memmove(void *, const void *, size_t);
+void *memmove(void *dst, const void *src, size_t cnt);
 
-void *memset(void *, int, size_t);
+void *memset(void *addr, int val, size_t cnt);
 
 #endif // STRING_H

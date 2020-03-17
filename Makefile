@@ -54,7 +54,7 @@ KERN_DEPS := $(KERN_OBJS:.o=.d)
 
 LIBK_SRCS := stdlib/heap.c
 LIBK_SRCS += string/memcmp.c string/memcpy.c string/memmove.c string/memset.c
-LIBK_SRCS += kglue.c
+LIBK_SRCS += kglue.c vector.c
 LIBK_OBJS := $(addprefix libk/, $(LIBK_SRCS))
 LIBK_OBJS := $(addprefix o/, $(addsuffix .o, $(LIBK_OBJS)))
 LIBK_DEPS := $(LIBK_OBJS:.o=.d)

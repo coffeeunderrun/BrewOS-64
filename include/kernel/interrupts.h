@@ -4,10 +4,14 @@
 #include <status.h>
 #include <sys/types.h>
 
-typedef struct irq_registers irq_registers_t;
+typedef struct isr_registers isr_registers_t;
 
-typedef status_t (*irq_handler_t)(irq_registers_t *);
+typedef void (*isr_handler_t)(isr_registers_t *);
 
-void init_interrupts(void);
+void init_int(void);
+
+void int_add_handler(unsigned int idx, isr_handler_t hnd);
+
+void int_del_handler(unsigned int idx, isr_handler_t hnd);
 
 #endif // INTERRUPTS_H

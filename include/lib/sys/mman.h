@@ -10,6 +10,6 @@
 
 #define MAP_FAILED ((void *) - 1)
 
-void *mmap(void *, size_t, int, int, int, off_t);
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
 
 #endif // SYS_MMAN_H

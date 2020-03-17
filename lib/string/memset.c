@@ -1,10 +1,10 @@
 #include <string.h>
 
-void *memset(void *s, int c, size_t n)
+void *memset(void *addr, int val, size_t cnt)
 {
-    char *p = (char *)s;
+    char *p = (char *)addr;
 
-    for( ; n; n--, *p++ = (char)c);
+    for( ; cnt; cnt--, *p++ = (char)val);
 
-    return s;
+    return addr;
 }

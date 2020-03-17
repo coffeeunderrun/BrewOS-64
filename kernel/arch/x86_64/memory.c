@@ -5,6 +5,7 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
+#include <interrupts.h>
 #include <memory.h>
 #include <status.h>
 #include <string.h>
@@ -68,6 +69,8 @@ static addr_t pop_mmap_frame(void);
 static status_t map_page(addr_t, flag_t, addr_t (*)(void));
 static status_t unmap_page(addr_t, void (*)(addr_t));
 
+static void page_fault_handler(isr_registers_t *);
+
 static page_table_t *get_p4_table(addr_t);
 static page_table_t *get_p3_table(addr_t);
 static page_table_t *get_p2_table(addr_t);
@@ -86,7 +89,7 @@ extern const uint64_t kernel_start;
 extern const uint64_t kernel_data;
 extern const uint64_t kernel_end;
 
-void init_memory(void *mmap)
+void init_mem(void *mmap)
 {
     kernel_page_table_end = (page_table_t *)ALIGN(&kernel_end);
 
@@ -148,42 +151,39 @@ void init_memory(void *mmap)
 
     // Add available memory map frames to stack
     addr_t addr;
-    while(mmap_entry != NULL && (addr = pop_mmap_frame()) > 0)
+    while(mmap_entry && (addr = pop_mmap_frame()) > 0)
     {
         push_stack_frame(addr);
     }
+
+    int_add_handler(ISR_VECTOR_PF, page_fault_handler);
 }
 
-status_t kmalloc(void *p, bool execute, bool write, bool user)
+status_t mem_alloc(void *addr, bool exec, bool rw, bool usr)
 {
     flag_t flags = 0;
 
-    if(!execute)
+    if(!exec)
     {
         flags |= PAGE_NOEXECUTE;
     }
 
-    if(write)
+    if(rw)
     {
         flags |= PAGE_WRITE;
     }
 
-    if(user)
+    if(usr)
     {
         flags |= PAGE_USER;
     }
 
-    return map_page((addr_t)p, flags, pop_stack_frame);
+    return map_page((addr_t)addr, flags, pop_stack_frame);
 }
 
-status_t kfree(void *p)
+status_t mem_free(void *addr)
 {
-    return unmap_page((addr_t)p, push_stack_frame);
-}
-
-status_t page_fault_handler(irq_registers_t *regs)
-{
-    return STATUS_OKAY;
+    return unmap_page((addr_t)addr, push_stack_frame);
 }
 
 static void push_stack_frame(addr_t paddr)
@@ -212,7 +212,7 @@ static addr_t pop_stack_frame(void)
 
 static addr_t pop_mmap_frame(void)
 {
-    while(mmap_entry != NULL && mmap_entry->type)
+    while(mmap_entry && mmap_entry->type)
     {
         if(mmap_entry->type != MAP_AVAILABLE || mmap_size < 0x1000)
         {
@@ -414,6 +414,10 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     (*push_frame_func)(paddr);
 
     return STATUS_OKAY;
+}
+
+static void page_fault_handler(isr_registers_t *regs)
+{
 }
 
 static page_table_t *get_p4_table(addr_t vaddr)

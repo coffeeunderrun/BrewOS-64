@@ -1,25 +1,29 @@
 #include <memory.h>
 #include <sys/mman.h>
 
-void *mmap(void *p, size_t sz, int pr, int fl, int fd, off_t of)
+void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off)
 {
-    if(pr == PROT_NONE)
+    if(!addr || len == 0)
     {
         return MAP_FAILED;
     }
 
-    if(sz == 0)
+    if(prot == PROT_NONE)
     {
+        // Not currently supported
         return MAP_FAILED;
     }
 
-    bool ex = pr & PROT_EXEC;
-    bool wr = pr & PROT_WRITE;
+    bool exec = prot & PROT_EXEC;
+    bool rw = prot & PROT_WRITE;
+    bool usr = false;
 
-    for(uint64_t addr = (uint64_t)p; sz; sz -= 0x1000, addr += 0x1000)
+    // Decrease size by 4 KiB (0x1000)
+    // Increase pointer by 4 KiB (8 x 0x200 = 0x1000)
+    for(void *p = addr; len; len -= 0x1000, p += 0x200)
     {
-        kmalloc((void *)addr, ex, wr, false);
+        mem_alloc(p, exec, rw, usr);
     }
 
-    return p;
+    return addr;
 }
