@@ -8,11 +8,13 @@
 #include <interrupts.h>
 #include <memory.h>
 
-void kmain(void *mmp)
+void kmain(void *mmap)
 {
-    init_interrupts();
+    // Initialize interrupt handler
+    init_int();
 
-    init_memory(mmp);
+    // Initialize memory manager
+    init_mem(mmap);
 
     while(1);
 }

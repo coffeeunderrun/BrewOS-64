@@ -1,11 +1,11 @@
 #include <string.h>
 
-void *memcpy(void *d, const void *s, size_t n)
+void *memcpy(void *dst, const void *src, size_t cnt)
 {
-    char *pd = (char *)d;
-    char *ps = (char *)s;
+    char *pd = (char *)dst;
+    char *ps = (char *)src;
 
-    for( ; n; n--, *pd++ = *ps++);
+    for( ; cnt; cnt--, *pd++ = *ps++);
 
-    return d;
+    return dst;
 }

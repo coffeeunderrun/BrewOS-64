@@ -1,16 +1,16 @@
 #include <string.h>
 
-void *memmove(void *d, const void *s, size_t n)
+void *memmove(void *dst, const void *src, size_t cnt)
 {
-    if(d < s)
+    if(dst < src)
     {
-        return memcpy(d, s, n);
+        return memcpy(dst, src, cnt);
     }
 
-    char *pd = (char *)(d + n - 1);
-    char *ps = (char *)(s + n - 1);
+    char *pd = (char *)(dst + cnt - 1);
+    char *ps = (char *)(src + cnt - 1);
 
-    for( ; n; n--, *pd-- = *ps--);
+    for( ; cnt; cnt--, *pd-- = *ps--);
 
-    return d;
+    return dst;
 }

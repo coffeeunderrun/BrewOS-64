@@ -2,7 +2,7 @@ bits 64
 
 global clear_irq, init_pics, load_idt
 
-extern irq_handler
+extern isr_handler
 
 PIC1_CTRL_PORT equ 0x20
 PIC1_DATA_PORT equ 0x21
@@ -16,21 +16,21 @@ ICW3_MASTER    equ 0x4
 ICW3_SLAVE     equ 0x2
 ICW4           equ 0x1
 
-%macro IRQ_NO_ERROR 1-2 0
-irq%1:
+%macro ISR_NO_ERROR 1-2 0
+isr%1:
     push %2 ; Error Low
     push %1 ; Vector Low
-    jmp irq_stub
+    jmp isr_stub
 %endmacro
 
-%macro IRQ_ERROR 1
-irq%1:
+%macro ISR_ERROR 1
+isr%1:
     push %1 ; Vector
-    jmp irq_stub
+    jmp isr_stub
 %endmacro
 
 %macro LOAD_IDT_ENTRY 1-4 0x8, 0x8E, 0
-    mov rax, qword irq%1           ; Address of ISR
+    mov rax, qword isr%1           ; Address of ISR
     mov cx, %2                     ; Segment selector
     mov dh, %3                     ; Flags
     mov dl, %4                     ; IST offset
@@ -184,7 +184,7 @@ load_idt_entry:
     ret
 
 ; Push registers onto stack and call the handler
-irq_stub:
+isr_stub:
     push r15
     push r14
     push r13
@@ -201,9 +201,9 @@ irq_stub:
     push rbx
     push rax
 
-    ; Pass register structure pointer to IRQ handler
+    ; Pass register structure pointer to ISR handler
     mov rdi, rsp
-    call irq_handler
+    call isr_handler
 
     pop rax
     pop rbx
@@ -226,47 +226,47 @@ irq_stub:
     iretq
 
 ; Software interrupts
-IRQ_ERROR 8
-IRQ_ERROR 10
-IRQ_ERROR 11
-IRQ_ERROR 12
-IRQ_ERROR 13
-IRQ_ERROR 14
-IRQ_ERROR 17
-IRQ_ERROR 30
+ISR_ERROR 8
+ISR_ERROR 10
+ISR_ERROR 11
+ISR_ERROR 12
+ISR_ERROR 13
+ISR_ERROR 14
+ISR_ERROR 17
+ISR_ERROR 30
 
-IRQ_NO_ERROR 0
-IRQ_NO_ERROR 1
-IRQ_NO_ERROR 2
-IRQ_NO_ERROR 3
-IRQ_NO_ERROR 4
-IRQ_NO_ERROR 5
-IRQ_NO_ERROR 6
-IRQ_NO_ERROR 7
-IRQ_NO_ERROR 9
-IRQ_NO_ERROR 16
-IRQ_NO_ERROR 18
-IRQ_NO_ERROR 19
-IRQ_NO_ERROR 20
-IRQ_NO_ERROR 128
+ISR_NO_ERROR 0
+ISR_NO_ERROR 1
+ISR_NO_ERROR 2
+ISR_NO_ERROR 3
+ISR_NO_ERROR 4
+ISR_NO_ERROR 5
+ISR_NO_ERROR 6
+ISR_NO_ERROR 7
+ISR_NO_ERROR 9
+ISR_NO_ERROR 16
+ISR_NO_ERROR 18
+ISR_NO_ERROR 19
+ISR_NO_ERROR 20
+ISR_NO_ERROR 128
 
 ; Hardware interrupts
-IRQ_NO_ERROR 32, 0
-IRQ_NO_ERROR 33, 1
-IRQ_NO_ERROR 34, 2
-IRQ_NO_ERROR 35, 3
-IRQ_NO_ERROR 36, 4
-IRQ_NO_ERROR 37, 5
-IRQ_NO_ERROR 38, 6
-IRQ_NO_ERROR 39, 7
-IRQ_NO_ERROR 40, 8
-IRQ_NO_ERROR 41, 9
-IRQ_NO_ERROR 42, 10
-IRQ_NO_ERROR 43, 11
-IRQ_NO_ERROR 44, 12
-IRQ_NO_ERROR 45, 13
-IRQ_NO_ERROR 46, 14
-IRQ_NO_ERROR 47, 15
+ISR_NO_ERROR 32, 0
+ISR_NO_ERROR 33, 1
+ISR_NO_ERROR 34, 2
+ISR_NO_ERROR 35, 3
+ISR_NO_ERROR 36, 4
+ISR_NO_ERROR 37, 5
+ISR_NO_ERROR 38, 6
+ISR_NO_ERROR 39, 7
+ISR_NO_ERROR 40, 8
+ISR_NO_ERROR 41, 9
+ISR_NO_ERROR 42, 10
+ISR_NO_ERROR 43, 11
+ISR_NO_ERROR 44, 12
+ISR_NO_ERROR 45, 13
+ISR_NO_ERROR 46, 14
+ISR_NO_ERROR 47, 15
 
 section .data
 
