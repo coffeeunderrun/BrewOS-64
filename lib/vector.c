@@ -1,39 +1,43 @@
 #include <stdlib.h>
+#include <string.h>
 #include <vector.h>
 
-#define INITIAL_CAP 10
+static inline void resize(vector_t *vec, size_t size);
 
-static void vec_resize(vector_t *, size_t);
-
-void vec_init(vector_t *vec)
+void vec_init(vector_t *vec, unsigned int cap)
 {
-    vec->cap = INITIAL_CAP;
+    vec->data = malloc(cap * sizeof(void *));
+    vec->cap = cap;
     vec->cnt = 0;
-    vec->items = malloc(sizeof(void *) * vec->cap);
 }
 
 void vec_push(vector_t *vec, void *item)
 {
-    if(vec->cap == vec->cnt)
+    if(!vec || !vec->data)
     {
-        vec_resize(vec, vec->cap * 2);
+        return;
     }
 
-    vec->items[vec->cnt++] = item;
+    if(vec->cap == vec->cnt)
+    {
+        resize(vec, vec->cap * 2);
+    }
+
+    vec->data[vec->cnt++] = item;
 }
 
 void *vec_pop(vector_t *vec)
 {
-    if(vec->cnt == 0)
+    if(!vec || !vec->data || !vec->cnt)
     {
         return NULL;
     }
 
-    void *item = vec->items[--vec->cnt];
+    void *item = vec->data[--vec->cnt];
 
-    if(vec->cnt > 0 && vec->cnt == vec->cap / 4)
+    if(vec->cnt && vec->cnt == vec->cap / 4)
     {
-        vec_resize(vec, vec->cap / 2);
+        resize(vec, vec->cap / 2);
     }
 
     return item;
@@ -41,88 +45,100 @@ void *vec_pop(vector_t *vec)
 
 void vec_ins(vector_t *vec, unsigned int idx, void *item)
 {
-    if(idx > vec->cnt)
+    if(!vec || !vec->data || idx > vec->cnt)
     {
         return;
     }
 
-    if(vec->cap == vec->cnt + 1)
+    if(vec->cap == vec->cnt)
     {
-        vec_resize(vec, vec->cap * 2);
+        resize(vec, vec->cap * 2);
     }
 
-    for(unsigned int i = vec->cnt; i > idx; i--)
-    {
-        vec->items[i] = vec->items[i - 1];
-    }
+    size_t move_size = (vec->cnt - idx) * sizeof(void *);
+    memmove(&vec->data[idx + 1], &vec->data[idx], move_size);
 
-    vec->items[idx] = item;
+    vec->data[idx] = item;
     vec->cnt++;
 }
 
 void vec_del(vector_t *vec, unsigned int idx)
 {
-    if(vec->cnt < idx)
+    if(!vec || !vec->data || idx >= vec->cnt)
     {
         return;
     }
 
-    vec->items[idx] = NULL;
-
-    for(unsigned int i = idx; i < vec->cnt - 1; i++)
-    {
-        vec->items[i] = vec->items[i + 1];
-        vec->items[i + 1] = NULL;
-    }
+    size_t move_size = (vec->cnt - idx - 1) * sizeof(void *);
+    memmove(&vec->data[idx], &vec->data[idx + 1], move_size);
 
     vec->cnt--;
 
-    if(vec->cnt > 0 && vec->cnt == vec->cap / 4)
+    if(vec->cnt && vec->cnt == vec->cap / 4)
     {
-        vec_resize(vec, vec->cap / 2);
+        resize(vec, vec->cap / 2);
     }
 }
 
 void vec_set(vector_t *vec, unsigned int idx, void *item)
 {
-    if(idx > vec->cnt)
+    if(!vec || !vec->data || idx >= vec->cnt)
     {
-        vec->items[idx] = item;
+        return;
     }
+
+    vec->data[idx] = item;
 }
 
 void *vec_get(vector_t *vec, unsigned int idx)
 {
-    if(idx < vec->cnt)
+    if(!vec || !vec->data || idx >= vec->cnt)
     {
-        return vec->items[idx];
+        return NULL;
     }
 
-    return NULL;
+    return vec->data[idx];
 }
 
 unsigned int vec_cnt(vector_t *vec)
 {
+    if(!vec)
+    {
+        return 0;
+    }
+
     return vec->cnt;
 }
 
 unsigned int vec_cap(vector_t *vec)
 {
+    if(!vec)
+    {
+        return 0;
+    }
+
     return vec->cap;
 }
 
 void vec_free(vector_t *vec)
 {
-    free(vec->items);
+    if(!vec || !vec->data)
+    {
+        return;
+    }
+
+    free(vec->data);
 }
 
-static void vec_resize(vector_t *vec, size_t size)
+static inline void resize(vector_t *vec, size_t size)
 {
-    void **items = realloc(vec->items, sizeof(void *) * size);
+    void **data = realloc(vec->data, size * sizeof(void *));
 
-    if(items)
+    if(!data)
     {
-        vec->items = items;
-        vec->cap = size;
+        return;
     }
+
+    vec->data = data;
+    vec->cap = size;
 }
