@@ -3,17 +3,17 @@
 
 #include <sys/types.h>
 
-typedef struct vector
+typedef struct
 {
-    void **items; // Pointer to list of pointers
-    size_t cap;   // Max number of items for currently allocated space
-    size_t cnt;   // Number of items
+    void **data; // Pointer to list of pointers
+    size_t cap;  // Max number of items for currently allocated space
+    size_t cnt;  // Number of items
 } vector_t;
 
 /*
  * Allocate memory for initial list using a default capacity
  */
-void vec_init(vector_t *vec);
+void vec_init(vector_t *vec, unsigned int cap);
 
 /*
  * Append item to end of list
