@@ -16,8 +16,7 @@ AR := $(TARGET)-elf-ar
 
 # COMPILER
 CC     := $(TARGET)-elf-gcc
-CCFLAG := -std=gnu17 -ffreestanding -nostdlib -masm=intel -mno-red-zone \
-	-zmax-page-size=0x1000 -Wall -Wextra
+CCFLAG := -std=gnu17 -ffreestanding -nostdlib -masm=intel -mno-red-zone -zmax-page-size=0x1000 -Wall -Wextra
 CCKERN := -m64 -mcmodel=kernel -Iinclude/kernel -Iinclude/lib -Lo
 
 ifdef DEBUG
@@ -47,7 +46,7 @@ LOAD_OBJS := $(addprefix loader/, $(LOAD_SRCS))
 LOAD_OBJS := $(addprefix o/, $(addsuffix .o, $(LOAD_OBJS)))
 LOAD_DEPS := $(LOAD_OBJS:.o=.d)
 
-KERN_SRCS := entry.s cpu.s interrupts.s interrupts.c main.c memory.c
+KERN_SRCS := entry.s arch.s arch.c interrupts.s interrupts.c main.c memory.c
 KERN_OBJS := $(addprefix kernel/, $(KERN_SRCS))
 KERN_OBJS := $(addprefix o/, $(addsuffix .o, $(KERN_OBJS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
