@@ -2,14 +2,17 @@
  * Assumptions
  * - Loader disabled interrupts
  * - Loader initialized GDT
- * - Loader initialized FPU
  */
 
+#include <arch.h>
 #include <interrupts.h>
 #include <memory.h>
 
 void kmain(void *mmap)
 {
+    // Initialize architecture specific features
+    init_arch();
+
     // Initialize interrupt handler
     init_int();
 

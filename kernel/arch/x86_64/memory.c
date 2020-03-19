@@ -9,7 +9,7 @@
 #include <memory.h>
 #include <status.h>
 #include <string.h>
-#include <arch/x86_64/cpu.h>
+#include <arch/x86_64/arch.h>
 #include <arch/x86_64/interrupts.h>
 
 // Memory Map Types
