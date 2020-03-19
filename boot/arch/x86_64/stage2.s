@@ -112,19 +112,13 @@ stage2:
     mov ebp, edx ; Save result since RDMSR will overwrite EDX register
     bt ebp, 29   ; Is long mode supported?
     jnc error_incompatible
-    mov eax, 1
-    cpuid
 
     mov eax, cr4
-    or eax, 0x620 ; Set PAE, OSFXSR, and OSXMMEXCPT
-    bt ebp, 13    ; Are global pages supported?
+    bts eax, 5 ; Set PAE
+    bt ebp, 13 ; Are global pages supported?
     jnc .no_global_pages
-    bts eax, 7    ; Set PGE
+    bts eax, 7 ; Set PGE
 .no_global_pages:
-    bt ecx, 26
-    jnc .no_xsave
-    bts eax, 18   ; Set OSXSAVE
-.no_xsave:
     mov cr4, eax
 
     mov ecx, 0xC0000080
@@ -137,12 +131,8 @@ stage2:
     wrmsr
 
     mov eax, cr0
-    or eax, 0x80010023 ; Set PE, MP, NE, WP, and PG
-    btr eax, 2         ; Clear EM
+    or eax, 0x80010001 ; Set PE, WP, and PG
     mov cr0, eax
-
-    ; Initialize FPU
-    fninit
 
     mov ax, gdt.data
     mov ds, ax
