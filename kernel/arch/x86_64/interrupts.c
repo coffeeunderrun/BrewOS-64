@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <interrupts.h>
 #include <arch/x86_64/interrupts.h>
 
@@ -16,10 +17,12 @@ void isr_handler(isr_registers_t *regs)
     clear_irq(regs->vector);
 }
 
-void int_add_handler(unsigned int idx, isr_handler_t hnd)
+err_t int_add_handler(unsigned int idx, isr_handler_t hnd)
 {
+    return OK;
 }
 
-void int_del_handler(unsigned int idx, isr_handler_t hnd)
+err_t int_del_handler(unsigned int idx, isr_handler_t hnd)
 {
+    return OK;
 }
