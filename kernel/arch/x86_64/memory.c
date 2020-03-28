@@ -5,9 +5,9 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
+#include <errno.h>
 #include <interrupts.h>
 #include <memory.h>
-#include <status.h>
 #include <string.h>
 #include <arch/x86_64/arch.h>
 #include <arch/x86_64/interrupts.h>
@@ -66,8 +66,8 @@ static void push_stack_frame(addr_t);
 static addr_t pop_stack_frame(void);
 static addr_t pop_mmap_frame(void);
 
-static status_t map_page(addr_t, flag_t, addr_t (*)(void));
-static status_t unmap_page(addr_t, void (*)(addr_t));
+static err_t map_page(addr_t, flag_t, addr_t (*)(void));
+static err_t unmap_page(addr_t, void (*)(addr_t));
 
 static void page_fault_handler(isr_registers_t *);
 
@@ -159,7 +159,7 @@ void init_mem(void *mmap)
     int_add_handler(ISR_VECTOR_PF, page_fault_handler);
 }
 
-status_t mem_alloc(void *addr, bool exec, bool rw, bool usr)
+err_t mem_alloc(void *addr, bool exec, bool rw, bool usr)
 {
     flag_t flags = 0;
 
@@ -181,15 +181,15 @@ status_t mem_alloc(void *addr, bool exec, bool rw, bool usr)
     return map_page((addr_t)addr, flags, pop_stack_frame);
 }
 
-status_t mem_free(void *addr)
+err_t mem_free(void *addr)
 {
     return unmap_page((addr_t)addr, push_stack_frame);
 }
 
 static void push_stack_frame(addr_t paddr)
 {
-    status_t status = map_page((addr_t)frame_stack, PAGE_WRITE | PAGE_GLOBAL, pop_mmap_frame);
-    if(status != STATUS_OKAY)
+    err_t err = map_page((addr_t)frame_stack, PAGE_WRITE | PAGE_GLOBAL, pop_mmap_frame);
+    if(err != OK)
     {
         return;
     }
@@ -235,10 +235,11 @@ static addr_t pop_mmap_frame(void)
     }
 
     mmap_entry = NULL;
+
     return 0;
 }
 
-static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void))
+static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void))
 {
     page_table_t *p4 = get_p4_table(vaddr);
     page_table_t *p3 = get_p3_table(vaddr);
@@ -253,7 +254,7 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         if(paddr == 0)
         {
             // No frames available
-            return ERROR_OUT_OF_MEMORY;
+            return ENOMEM;
         }
 
         // Page size and global flags must be 0 for P4 entries
@@ -270,7 +271,7 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         if(paddr == 0)
         {
             // No frames available
-            return ERROR_OUT_OF_MEMORY;
+            return ENOMEM;
         }
 
         // Do not allow 1 GiB pages
@@ -290,7 +291,7 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         if(paddr == 0)
         {
             // No frames available
-            return ERROR_OUT_OF_MEMORY;
+            return ENOMEM;
         }
 
         // Do not allow 2 MiB pages (this may change in the future)
@@ -310,7 +311,7 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         if(paddr == 0)
         {
             // No frames available
-            return ERROR_OUT_OF_MEMORY;
+            return ENOMEM;
         }
 
         p1->entries[p1e_idx] = paddr | PAGE_PRESENT | flags;
@@ -320,10 +321,10 @@ static status_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(vo
         inc_entry_count(&p2->entries[p2e_idx]);
     }
 
-    return STATUS_OKAY;
+    return OK;
 }
 
-static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
+static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
 {
     // Unmap page
     page_table_t *p1 = get_p1_table(vaddr);
@@ -331,7 +332,7 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
         // P1 entry is not present
-        return STATUS_OKAY;
+        return OK;
     }
 
     // Get physical address from P1 entry
@@ -354,7 +355,7 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     if(has_entries(p2->entries[p2e_idx]))
     {
         // There are still P1 entries present
-        return STATUS_OKAY;
+        return OK;
     }
 
     // Get physical address from P2 entry
@@ -377,7 +378,7 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     if(has_entries(p3->entries[p3e_idx]))
     {
         // There are still P2 entries present
-        return STATUS_OKAY;
+        return OK;
     }
 
     // Get physical address from P3 entry
@@ -400,7 +401,7 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     if(has_entries(p4->entries[p4e_idx]))
     {
         // There are still P2 entries present
-        return STATUS_OKAY;
+        return OK;
     }
 
     // Get physical address from P3 entry
@@ -413,7 +414,7 @@ static status_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     // Put frame back on stack
     (*push_frame_func)(paddr);
 
-    return STATUS_OKAY;
+    return OK;
 }
 
 static void page_fault_handler(isr_registers_t *regs)

@@ -7,8 +7,8 @@ SECTIONS
 
 	.text :
 	{
-		*stage1.s.o
-		*bios.s.o
+		*stage1.*.o
+		*bios.*.o
 		. = 510;
 		SHORT(0xAA55)
 		*(.text .text*)
