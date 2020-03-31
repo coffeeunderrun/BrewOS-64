@@ -7,17 +7,19 @@ else
 CCFLAG += -O3
 endif
 
-CCFLAG += -I$(INC_PATH)/lib
-CCLIBC :=
-CCLIBK := -ffreestanding -nostdlib -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel
+CCFLAG += -ffreestanding -nostdlib
+CCLIBC := -D__LIBC
+CCLIBK := -D__LIBK -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel
 
-LIBC_SRCS :=
-LIBC_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libc.o, $(LIBC_SRCS)))
+LIBC_SRCS := heap.c fprintf.c memcmp.c memcpy.c memmove.c memset.c mmap.c printf.c \
+	sprintf.c vector.c write.c
+LIBC_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libc.o, $(SHRD_SRCS) $(LIBC_SRCS)))
 LIBC_DEPS := $(LIBC_OBJS:.o=.d)
 
-LIBK_SRCS := heap.c memcmp.c memcpy.c memmove.c memset.c kmmap.c vector.c
-LIBK_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libk.o, $(LIBK_SRCS)))
+LIBK_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libk.o, $(SHRD_SRCS) $(LIBC_SRCS)))
 LIBK_DEPS := $(LIBK_OBJS:.o=.d)
+
+VPATH = mman:stdio:stdlib:string:unistd
 
 libc: $(OBJ_PATH)/libc.a
 
@@ -27,9 +29,7 @@ clean:
 	@rm -f $(LIBC_OBJS) $(LIBC_DEPS) $(LIBK_OBJS) $(LIBK_DEPS)
 	@rm -f $(OBJ_PATH)/libc.a $(OBJ_PATH)/libk.a
 
-$(LIBC_OBJS) $(LIBK_OBJS): | $(OBJ_PATH)
-
-$(OBJ_PATH)/libc.a $(OBJ_PATH)/libk.a: | $(OBJ_PATH)
+$(LIBC_OBJS) $(LIBK_OBJS) $(OBJ_PATH)/libc.a $(OBJ_PATH)/libk.a: | $(OBJ_PATH)
 
 $(OBJ_PATH)/libc.a: $(LIBC_OBJS)
 	@echo "Archiving $(@F)..."
@@ -44,14 +44,14 @@ $(OBJ_PATH)/%.s.libc.o: %.s
 	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) -o$@ $<
 
+$(OBJ_PATH)/%.c.libc.o: %.c
+	@echo "Compiling $(@F)..."
+	@$(CC) $(CCFLAG) $(CCLIBC) -MMD -c -o$@ $<
+
 $(OBJ_PATH)/%.s.libk.o: %.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) -o$@ $<
-
-$(OBJ_PATH)/%.c.libc.o: %.c
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) $(CCLIBC) -MMD -c -o$@ $<
 
 $(OBJ_PATH)/%.c.libk.o: %.c
 	@echo "Compiling $(@F)..."

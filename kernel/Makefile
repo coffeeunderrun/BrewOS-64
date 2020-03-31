@@ -7,14 +7,16 @@ else
 CCFLAG += -O3
 endif
 
-CCFLAG += -ffreestanding -nostdlib -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel
-CCFLAG += -I$(INC_PATH)/kernel -I$(INC_PATH)/lib
+CCFLAG += -ffreestanding -nostdlib -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel \
+	-I$(INC_PATH)/kernel
 
 LDFLAG += -Tarch/$(ARCH)/kernel.ld
 
 KERN_SRCS := entry.s arch.s arch.c interrupts.s interrupts.c main.c memory.c
 KERN_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .kern.o, $(KERN_SRCS)))
 KERN_DEPS := $(KERN_OBJS:.o=.d)
+
+VPATH = arch/$(ARCH)
 
 kernel: $(ROOT_PATH)/brewkern
 
@@ -30,14 +32,10 @@ $(ROOT_PATH)/brewkern: $(KERN_OBJS)
 	@echo "Linking $(@F)..."
 	@$(LD) $(CCFLAG) $(LDFLAG) -o$@ $^ -lk
 
-$(OBJ_PATH)/%.s.kern.o: arch/$(ARCH)/%.s
+$(OBJ_PATH)/%.s.kern.o: %.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) -o$@ $<
-
-$(OBJ_PATH)/%.c.kern.o: arch/$(ARCH)/%.c
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) -MMD -c -o$@ $<
 
 $(OBJ_PATH)/%.c.kern.o: %.c
 	@echo "Compiling $(@F)..."
