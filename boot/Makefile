@@ -15,6 +15,8 @@ LOAD_SRCS := stage2.s bios.s ext2.s
 LOAD_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .load.o, $(LOAD_SRCS)))
 LOAD_DEPS := $(LOAD_OBJS:.o=.d)
 
+VPATH = arch/$(ARCH)
+
 boot: $(IMG_PATH)/brewdisk.img
 
 clean:
@@ -38,12 +40,12 @@ $(ROOT_PATH)/brewload: $(LOAD_OBJS)
 	@echo "Linking $(@F)..."
 	@$(LD) $(CCFLAG) $(LDFLAG) $(LDLOAD) -o$@ $^
 
-$(OBJ_PATH)/%.s.boot.o: arch/$(ARCH)/%.s
+$(OBJ_PATH)/%.s.boot.o: %.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) $(ASBOOT) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) $(ASBOOT) -o$@ $<
 
-$(OBJ_PATH)/%.s.load.o: arch/$(ARCH)/%.s
+$(OBJ_PATH)/%.s.load.o: %.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) $(ASLOAD) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) $(ASLOAD) -o$@ $<

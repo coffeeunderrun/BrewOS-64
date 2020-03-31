@@ -13,7 +13,8 @@ AR     := $(ARCH)-elf-ar
 ARFLAG :=
 
 CC     := $(ARCH)-elf-gcc
-CCFLAG := -std=gnu17 -m64 -masm=intel -Wall -Wextra -I$(INC_PATH) -L$(OBJ_PATH)
+CCFLAG := -std=gnu17 -m64 -masm=intel -Wall -Wextra -Wno-unused-parameter \
+	-L$(OBJ_PATH) -I$(INC_PATH)/lib
 
 LD     := $(ARCH)-elf-gcc
 LDFLAG :=
@@ -30,10 +31,7 @@ boot: kernel
 kernel: libk
 	@$(MAKE) --no-print-directory -Ckernel $@
 
-libc:
-	@$(MAKE) --no-print-directory -Clib $@
-
-libk:
+libc libk:
 	@$(MAKE) --no-print-directory -Clib $@
 
 clean:

@@ -27,8 +27,20 @@ static void defrag_blocks(block_header_t *blk);
 static inline block_header_t *get_block_head(void *addr);
 static inline void *get_block_data(block_header_t *blk);
 
-extern uint64_t heap_start;
-extern uint64_t heap_end;
+#ifdef __LIBK
+
+extern const uintptr_t _heap_start;
+extern const uintptr_t _heap_end;
+
+static const uintptr_t heap_start = (uintptr_t)&_heap_start;
+static const uintptr_t heap_end = (uintptr_t)&_heap_end;
+
+#else
+
+extern uintptr_t heap_start;
+extern uintptr_t heap_end;
+
+#endif // __LIBK
 
 void *calloc(size_t el_cnt, size_t el_size)
 {
@@ -211,12 +223,12 @@ static block_header_t *shrink_block(block_header_t *blk, size_t size)
 
 static block_header_t *get_first_block(void)
 {
-    block_header_t *blk = (block_header_t *)&heap_start;
+    block_header_t *blk = (block_header_t *)heap_start;
 
     if(blk && !IS_VALID(blk))
     {
         // One-time initialization of first block
-        size_t size = (size_t)&heap_end - (size_t)&heap_start;
+        size_t size = (size_t)(heap_end - heap_start);
         *blk = (block_header_t){ MAGIC, ATTR_FREE, size, NULL, NULL };
     }
 
