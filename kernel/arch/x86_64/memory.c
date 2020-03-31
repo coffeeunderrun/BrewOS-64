@@ -85,13 +85,17 @@ static inline void inc_entry_count(page_entry_t *);
 static inline void dec_entry_count(page_entry_t *);
 static inline bool has_entries(page_entry_t);
 
-extern const uint64_t kernel_start;
-extern const uint64_t kernel_data;
-extern const uint64_t kernel_end;
+extern const uintptr_t _kernel_start;
+extern const uintptr_t _kernel_data;
+extern const uintptr_t _kernel_end;
+
+static const uintptr_t kernel_start = (uintptr_t)&_kernel_start;
+static const uintptr_t kernel_data = (uintptr_t)&_kernel_data;
+static const uintptr_t kernel_end = (uintptr_t)&_kernel_end;
 
 void init_mem(void *mmap)
 {
-    kernel_page_table_end = (page_table_t *)ALIGN(&kernel_end);
+    kernel_page_table_end = (page_table_t *)ALIGN(kernel_end);
 
     page_table_t *p4 = kernel_page_table_end++;
     page_table_t *p3 = kernel_page_table_end++;
@@ -109,7 +113,7 @@ void init_mem(void *mmap)
     inc_entry_count(&p4->entries[511]);
 
     // Identity map individual pages
-    for(addr_t addr = 0; addr < PADDR(ALIGN(&kernel_end)); addr += 0x1000)
+    for(addr_t addr = 0; addr < PADDR(ALIGN(kernel_end)); addr += 0x1000)
     {
         uint64_t p2e_idx = get_p2e_index(addr);
         if(!(p2->entries[p2e_idx] & PAGE_PRESENT))
@@ -123,7 +127,7 @@ void init_mem(void *mmap)
         }
 
         uint64_t p1e_idx = get_p1e_index(addr);
-        if(addr >= PADDR(ALIGN(&kernel_start)) && addr < PADDR(ALIGN(&kernel_data)))
+        if(addr >= PADDR(ALIGN(kernel_start)) && addr < PADDR(ALIGN(kernel_data)))
         {
             // Kernel code is read-only and executable
             p1->entries[p1e_idx] = addr | PAGE_PRESENT | PAGE_GLOBAL;
@@ -142,7 +146,7 @@ void init_mem(void *mmap)
     load_pml4(PADDR(p4));
 
     // Bottom of frame stack starts immediately after kernel
-    frame_stack = (addr_t *)ALIGN(&kernel_end);
+    frame_stack = (addr_t *)ALIGN(kernel_end);
 
     // Initialize memory map pop frame function
     mmap_entry = (mmap_entry_t *)mmap;
@@ -200,7 +204,7 @@ static void push_stack_frame(addr_t paddr)
 
 static addr_t pop_stack_frame(void)
 {
-    if(frame_stack > (addr_t *)ALIGN(&kernel_end))
+    if(frame_stack > (addr_t *)ALIGN(kernel_end))
     {
         // Move frame stack pointer down and fetch physical address
         return *--frame_stack;

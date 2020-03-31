@@ -7,14 +7,14 @@ SECTIONS
 
 	.text ALIGN(4K) : AT(ADDR(.text) - 0xFFFFFFFF80000000)
 	{
-		kernel_start = .;
+		_kernel_start = .;
 		*(.text .text*)
 		*(.rodata .rodata*)
 	}
 
 	.data ALIGN(4K) : AT(ADDR(.data) - 0xFFFFFFFF80000000)
 	{
-		kernel_data = .;
+		_kernel_data = .;
 		*(.data)
 	}
 
@@ -22,10 +22,10 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
-		heap_start = .;
+		_heap_start = .;
 		. += 0x8000;
-		heap_end = .;
-		kernel_end = .;
+		_heap_end = .;
+		_kernel_end = .;
 	}
 
 	/DISCARD/ :
