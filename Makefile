@@ -12,11 +12,11 @@ ASFLAG := -pnasm
 AR     := $(ARCH)-elf-ar
 ARFLAG :=
 
-CC     := $(ARCH)-elf-gcc
-CCFLAG := -std=gnu17 -m64 -masm=intel -Wall -Wextra -Wno-unused-parameter \
+CC     := $(ARCH)-elf-g++
+CCFLAG := -std=gnu++17 -masm=intel -Wall -Wextra -Wno-unused-parameter \
 	-L$(OBJ_PATH) -I$(INC_PATH)/lib
 
-LD     := $(ARCH)-elf-gcc
+LD     := $(ARCH)-elf-g++
 LDFLAG :=
 
 ifneq ($(DEBUG), 1)
