@@ -9,10 +9,11 @@ endif
 
 CCFLAG += -ffreestanding -nostdlib
 CCLIBC := -D__LIBC
-CCLIBK := -D__LIBK -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel
+CCLIBK := -D__LIBK -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel \
+	-fno-exceptions -fno-rtti
 
 LIBC_SRCS := heap.c fprintf.c memcmp.c memcpy.c memmove.c memset.c mmap.c printf.c \
-	sprintf.c vector.c write.c
+	sprintf.c write.c
 LIBC_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libc.o, $(SHRD_SRCS) $(LIBC_SRCS)))
 LIBC_DEPS := $(LIBC_OBJS:.o=.d)
 
@@ -48,12 +49,20 @@ $(OBJ_PATH)/%.c.libc.o: %.c
 	@echo "Compiling $(@F)..."
 	@$(CC) $(CCFLAG) $(CCLIBC) -MMD -c -o$@ $<
 
+$(OBJ_PATH)/%.cpp.libc.o: %.cpp
+	@echo "Compiling $(@F)..."
+	@$(CC) $(CCFLAG) $(CCLIBC) -MMD -c -o$@ $<
+
 $(OBJ_PATH)/%.s.libk.o: %.s
 	@echo "Assembling $(@F)..."
 	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
 	@$(AS) $(ASFLAG) -o$@ $<
 
 $(OBJ_PATH)/%.c.libk.o: %.c
+	@echo "Compiling $(@F)..."
+	@$(CC) $(CCFLAG) $(CCLIBK) -MMD -c -o$@ $<
+
+$(OBJ_PATH)/%.cpp.libk.o: %.cpp
 	@echo "Compiling $(@F)..."
 	@$(CC) $(CCFLAG) $(CCLIBK) -MMD -c -o$@ $<
 

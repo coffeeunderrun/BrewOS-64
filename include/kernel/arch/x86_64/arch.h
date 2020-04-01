@@ -3,10 +3,10 @@
 
 #include <sys/types.h>
 
-extern void flush_page(void *addr);
+extern "C" void flush_page(void *addr);
 
-extern void flush_tlb(void);
+extern "C" void flush_tlb(void);
 
-extern void load_pml4(uint64_t addr);
+extern "C" void load_pml4(uint64_t addr);
 
 #endif // X86_64_ARCH_H
