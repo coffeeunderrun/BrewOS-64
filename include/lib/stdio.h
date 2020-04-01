@@ -16,20 +16,20 @@ extern FILE *stderr;
 #define stdout stdout
 #define stderr stderr
 
-int fprintf(FILE *restrict file, const char *restrict fmt, ...);
+int fprintf(FILE *file, const char *fmt, ...);
 
-int printf(const char *restrict fmt, ...);
+int printf(const char *fmt, ...);
 
-int snprintf(char *restrict str, size_t size, const char *restrict fmt, ...);
+int snprintf(char *str, size_t size, const char *fmt, ...);
 
-int sprintf(char *restrict str, const char *restrict fmt, ...);
+int sprintf(char *str, const char *fmt, ...);
 
-int vfprintf(FILE *restrict file, const char *restrict fmt, va_list arg);
+int vfprintf(FILE *file, const char *fmt, va_list arg);
 
-int vprintf(const char *restrict fmt, va_list arg);
+int vprintf(const char *fmt, va_list arg);
 
-int vsnprintf(char *restrict str, size_t size, const char *restrict fmt, va_list arg);
+int vsnprintf(char *str, size_t size, const char *fmt, va_list arg);
 
-int vsprintf(char *restrict str, const char *restrict fmt, va_list arg);
+int vsprintf(char *str, const char *fmt, va_list arg);
 
 #endif // STDIO_H

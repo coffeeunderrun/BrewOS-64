@@ -1,9 +1,8 @@
 bits 64
 
-global init_fpu, flush_page, flush_tlb, load_pml4
-
 section .text
 
+global init_fpu
 init_fpu:
     mov rax, 1
     cpuid         ; Get CPU features
@@ -20,15 +19,18 @@ init_fpu:
     fninit        ; Initialize FPU
     ret
 
+global flush_page
 flush_page:
     invlpg [rdi]
     ret
 
+global flush_tlb
 flush_tlb:
     mov rax, cr3
     mov cr3, rax
     ret
 
+global load_pml4
 load_pml4:
     mov cr3, rdi
     ret

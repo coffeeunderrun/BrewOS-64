@@ -1,11 +1,10 @@
 bits 64
 
-global entry
-
 extern kmain
 
 section .text
 
+global entry
 entry:
     mov rsp, qword kernel_stack_top
     jmp kmain

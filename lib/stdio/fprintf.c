@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int fprintf(FILE *restrict file, const char *restrict fmt, ...)
+int fprintf(FILE *file, const char *fmt, ...)
 {
     va_list arg;
     va_start(arg, fmt);
@@ -12,7 +12,7 @@ int fprintf(FILE *restrict file, const char *restrict fmt, ...)
     return result;
 }
 
-int vfprintf(FILE *restrict file, const char *restrict fmt, va_list arg)
+int vfprintf(FILE *file, const char *fmt, va_list arg)
 {
     return 0;
 }
