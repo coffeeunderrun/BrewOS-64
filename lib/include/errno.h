@@ -3,8 +3,6 @@
 
 #include <sys/types.h>
 
-typedef err_t errno;
-
 #define OK              0  // No error
 #define E2BIG           1  // Argument list too long
 #define EACCES          2  // Permission denied
@@ -83,5 +81,16 @@ typedef err_t errno;
 #define ETXTBSY         75 // Text file busy
 #define EWOULDBLOCK     76 // Operation would block (may be the same value as [EAGAIN])
 #define EXDEV           77 // Cross-device link
+
+extern int errno;
+#define errno errno
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // ERRNO_H

@@ -1,44 +1,78 @@
-ARCH  ?= x86_64
-DEBUG ?= 1
+OS      ?= brewos
+BUILD   ?= debug
+MACHINE ?= x86_64
 
-IMG_PATH  := ${CURDIR}
-INC_PATH  := ${CURDIR}/include
-OBJ_PATH  := ${CURDIR}/o
-ROOT_PATH := ${CURDIR}/root
+# SYSROOT
+INC_PATH := $(CURDIR)/sysroot/usr/include
+LIB_PATH := $(CURDIR)/sysroot/usr/lib
 
-AS     := yasm
-ASFLAG := -pnasm
-
-AR     := $(ARCH)-elf-ar
-ARFLAG :=
-
-CC     := $(ARCH)-elf-g++
-CCFLAG := -std=gnu++17 -masm=intel -Wall -Wextra -Wno-unused-parameter \
-	-L$(OBJ_PATH) -I$(INC_PATH)/lib
-
-LD     := $(ARCH)-elf-g++
-LDFLAG :=
-
-ifneq ($(DEBUG), 1)
-LDFLAG += -s
+# ASSEMBLER
+ifeq ($(MACHINE), x86_64)
+AS       := yasm
+AS_FLAGS := -pnasm
 endif
 
-all: libc boot
+# ARCHIVER
+AR       := $(MACHINE)-$(OS)-ar
+AR_FLAGS :=
 
-boot: kernel
+# C AND C++ COMPILER FLAGS
+C_FLAGS := -Wall -Wextra -Wno-unused-parameter
+
+ifeq ($(MACHINE), x86_64)
+C_FLAGS += -masm=intel
+endif
+
+# C COMPILER
+CC       := $(MACHINE)-$(OS)-gcc
+CC_FLAGS := -std=gnu17
+
+# C++ COMPILER
+CXX       := $(MACHINE)-$(OS)-g++
+CXX_FLAGS := -std=gnu++17
+
+# LINKER
+LD       := $(MACHINE)-$(OS)-ld
+LD_FLAGS :=
+
+ifeq ($(MACHINE), x86_64)
+LD_FLAGS += -zmax-page-size=0x1000
+endif
+
+ifneq ($(BUILD), debug)
+LD_FLAGS += -s
+endif
+
+export
+
+.PHONY: all
+all: boot loader kernel libc
+
+.PHONY: boot loader
+boot loader:
 	@$(MAKE) --no-print-directory -Cboot $@
 
-kernel: libk
+.PHONY: kernel
+kernel: libk install-libk
 	@$(MAKE) --no-print-directory -Ckernel $@
 
+.PHONY: libc libk
 libc libk:
 	@$(MAKE) --no-print-directory -Clib $@
 
+.PHONY: clean
 clean:
 	@$(MAKE) --no-print-directory -Cboot $@
 	@$(MAKE) --no-print-directory -Ckernel $@
 	@$(MAKE) --no-print-directory -Clib $@
+	@rm -rf root *.img
 
-.PHONY: all boot kernel libc libk clean
+.PHONY: install-libc install-libk
+install-libc install-libk:
+	@$(MAKE) --no-print-directory -Clib $@
 
-export
+hdd.img: all
+	@mkdir -p root
+	@cp -Pf boot/loader kernel/kernel root
+	@mke2fs -text2 -droot -F $@ 32M
+	@dd if=boot/boot of=$@ bs=512 count=2 conv=notrunc
