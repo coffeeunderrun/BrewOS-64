@@ -2,9 +2,9 @@
 #include <interrupts.h>
 #include <arch/x86_64/interrupts.h>
 
-extern "C" void init_pics(void);
-extern "C" void load_idt(void);
-extern "C" void clear_irq(uint64_t irq);
+void init_pics(void);
+void load_idt(void);
+void clear_irq(uint64_t irq);
 
 void init_int(void)
 {
@@ -12,7 +12,7 @@ void init_int(void)
     load_idt();
 }
 
-extern "C" void isr_handler(isr_registers_t *regs)
+void isr_handler(isr_registers_t *regs)
 {
     clear_irq(regs->vector);
 }

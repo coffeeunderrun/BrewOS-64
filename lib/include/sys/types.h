@@ -10,6 +10,16 @@ typedef int err_t;
 
 typedef int64_t off_t;
 
+typedef int64_t pid_t;
+
 typedef int64_t ssize_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SYS_TYPES_H
