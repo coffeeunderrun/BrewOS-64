@@ -1,58 +1,46 @@
-ASFLAG += -felf64 -mamd64
+AS_FLAGS += -felf64 -mamd64
 
-ifeq ($(DEBUG), 1)
-ASFLAG += -gdwarf2
-CCFLAG += -gdwarf-2 -O0
+C_FLAGS += -Iinclude -ffreestanding -fbuiltin -mno-red-zone -mcmodel=kernel
+
+CXX_FLAGS += -fno-exceptions -fno-rtti
+
+LD_FLAGS += -Tarch/$(MACHINE)/kernel.ld
+
+ifeq ($(BUILD), debug)
+AS_FLAGS += -gdwarf2
+C_FLAGS  += -gdwarf-2 -O0
 else
-CCFLAG += -O3
+C_FLAGS  += -O3
 endif
 
-CCFLAG += -ffreestanding -nostdlib -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel \
-	-fno-exceptions -fno-rtti -I$(INC_PATH)/kernel
+LIBS := -lk -lgcc -nostdlib
 
-LDFLAG += -Tarch/$(ARCH)/kernel.ld
+CRTB_OBJ := $(shell $(CXX) $(CXX_FLAGS) $(C_FLAGS) -print-file-name=crtbegin.o)
+CRTE_OBJ := $(shell $(CXX) $(CXX_FLAGS) $(C_FLAGS) -print-file-name=crtend.o)
 
-KERN_SRCS := arch.s arch.c entry.s interrupts.s interrupts.c main.cpp memory.c
-KERN_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .kern.o, $(KERN_SRCS)))
-KERN_DEPS := $(KERN_OBJS:.o=.d)
+KERN_SRCS := \
+	arch/$(MACHINE)/arch.s arch/$(MACHINE)/entry.s arch/$(MACHINE)/interrupts.s \
+	arch/$(MACHINE)/interrupts.c arch/$(MACHINE)/memory.c \
+	main.cpp
+KERN_OBJS := $(addsuffix .o, $(KERN_SRCS))
 
-CRTI_OBJS := $(OBJ_PATH)/crti.s.kern.o
-CRTN_OBJS := $(OBJ_PATH)/crtn.s.kern.o
-CRTX_DEPS := $(CRTI_OBJS:.o=.d) $(CRTN_OBJS:.o=.d)
-
-CRTB_OBJS := $(shell $(CC) $(CCFLAG) -print-file-name=crtbegin.o)
-CRTE_OBJS := $(shell $(CC) $(CCFLAG) -print-file-name=crtend.o)
-
-VPATH = arch/$(ARCH)
-
-kernel: $(ROOT_PATH)/brewkern
+ALL_OBJS := $(KERN_OBJS)
+ALL_DEPS := $(ALL_OBJS:.o=.d)
 
 clean:
-	@rm -f $(KERN_OBJS) $(KERN_DEPS)
-	@rm -f $(ROOT_PATH)/brewkern
+	@rm -f $(ALL_OBJS) $(ALL_DEPS) kernel
 
-$(KERN_OBJS): | $(OBJ_PATH)
+kernel: $(LIB_PATH)/crti.o $(CRTB_OBJ) $(KERN_OBJS) $(CRTE_OBJ) $(LIB_PATH)/crtn.o
+	$(CXX) $(CXX_FLAGS) $(C_FLAGS) $(LD_FLAGS) -o$@ $^ $(LIBS)
 
-$(ROOT_PATH)/brewkern: | $(ROOT_PATH)
+%.s.o: %.s
+	$(AS) $(AS_FLAGS) -M $< > $(@:.o=.d)
+	$(AS) $(AS_FLAGS) -o$@ $<
 
-$(ROOT_PATH)/brewkern: $(CRTI_OBJS) $(CRTB_OBJS) $(KERN_OBJS) $(CRTE_OBJS) $(CRTN_OBJS)
-	@echo "Linking $(@F)..."
-	@$(LD) $(CCFLAG) $(LDFLAG) -o$@ $^ -lk
+%.c.o: %.c
+	$(CC) $(CC_FLAGS) $(C_FLAGS) -MMD -c -o$@ $<
 
-$(OBJ_PATH)/%.s.kern.o: %.s
-	@echo "Assembling $(@F)..."
-	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
-	@$(AS) $(ASFLAG) -o$@ $<
+%.cpp.o: %.cpp
+	$(CXX) $(CXX_FLAGS) $(C_FLAGS) -MMD -c -o$@ $<
 
-$(OBJ_PATH)/%.c.kern.o: %.c
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) -MMD -c -o$@ $<
-
-$(OBJ_PATH)/%.cpp.kern.o: %.cpp
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) -MMD -c -o$@ $<
-
-$(OBJ_PATH) $(ROOT_PATH):
-	@mkdir -p $@
-
--include $(KERN_DEPS) $(CRTX_DEPS)
+-include $(ALL_DEPS)

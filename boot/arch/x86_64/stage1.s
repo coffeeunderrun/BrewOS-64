@@ -59,7 +59,7 @@ error_not_found:
     call print
     jmp reboot
 
-filename: db "brewload"
+filename: db "loader"
 .length:  equ $ - filename
 
 msg:

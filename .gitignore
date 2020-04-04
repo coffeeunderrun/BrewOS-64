@@ -1,4 +1,9 @@
-/bin
-/o
 /root
+/sysroot
+/boot/boot
+/boot/loader
+/kernel/kernel
 *.img
+*.a
+*.d
+*.o
