@@ -3,18 +3,16 @@
 
 #include <sys/types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace BrewOS {
+namespace Memory {
 
-void init_mem(void *mmap);
+void Initialize(void *mem_map);
 
-err_t mem_alloc(void *addr, bool exec, bool rw, bool usr);
+err_t Allocate(void *addr, bool execute, bool write, bool user);
 
-err_t mem_free(void *addr);
+err_t Free(void *addr);
 
-#ifdef __cplusplus
-}
-#endif
+} // Memory
+} // BrewOS
 
 #endif // MEMORY_H

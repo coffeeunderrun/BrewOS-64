@@ -1,6 +1,6 @@
 bits 64
 
-extern init_fpu, kmain
+extern init_fpu, KernelMain
 
 section .text
 
@@ -10,7 +10,7 @@ entry:
 
     call init_fpu
 
-    jmp kmain
+    jmp KernelMain
 
 section .bss
 

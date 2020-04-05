@@ -1,6 +1,7 @@
 AS_FLAGS += -felf64 -mamd64
 
-C_FLAGS += -Iinclude -ffreestanding -fbuiltin -mno-red-zone -mcmodel=kernel
+# TODO: Include -fbuiltin in C_FLAGS when C library supports all necessary functions
+C_FLAGS += -Iinclude -ffreestanding -mno-red-zone -mcmodel=kernel
 
 CXX_FLAGS += -fno-exceptions -fno-rtti
 
@@ -20,7 +21,7 @@ CRTE_OBJ := $(shell $(CXX) $(CXX_FLAGS) $(C_FLAGS) -print-file-name=crtend.o)
 
 KERN_SRCS := \
 	arch/$(MACHINE)/arch.s arch/$(MACHINE)/entry.s arch/$(MACHINE)/interrupts.s \
-	arch/$(MACHINE)/interrupts.c arch/$(MACHINE)/memory.c \
+	arch/$(MACHINE)/interrupts.cpp arch/$(MACHINE)/memory.cpp \
 	main.cpp
 KERN_OBJS := $(addsuffix .o, $(KERN_SRCS))
 

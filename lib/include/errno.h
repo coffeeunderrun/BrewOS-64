@@ -85,12 +85,4 @@
 extern int errno;
 #define errno errno
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif // ERRNO_H
