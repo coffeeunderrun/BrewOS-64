@@ -1,8 +1,6 @@
 bits 64
 
-global clear_irq, init_pics, load_idt
-
-extern isr_handler
+extern InterruptHandler
 
 PIC1_CTRL_PORT equ 0x20
 PIC1_DATA_PORT equ 0x21
@@ -44,6 +42,7 @@ section .text
 ; Interrupt vector to be clear in AL
 ; Vectors 32-39, originally 0-7, are PIC1
 ; Vectors 40-47, originally 8-15, are PIC2
+global clear_irq
 clear_irq:
     cmp al, 32
     jb .done
@@ -59,6 +58,7 @@ clear_irq:
     ret
 
 ; Enable PICs and remap hardware IRQ vectors
+global init_pics
 init_pics:
     ; Initialize programmable interrupt controllers
     mov al, ICW1
@@ -88,6 +88,7 @@ init_pics:
     out PIC2_DATA_PORT, al
     ret
 
+global load_idt
 load_idt:
     ; Zero out IDT
     xor rax, rax
@@ -144,7 +145,7 @@ load_idt:
 
     ; Vectors 48 - 127 are unused
 
-    LOAD_IDT_ENTRY 128, 0x8, 0xEE ; Syscall from user land
+    LOAD_IDT_ENTRY 128, 0x8, 0xEE ; Syscall
 
     ; Vectors 129 - 255 are unused
 
@@ -203,7 +204,7 @@ isr_stub:
 
     ; Pass register structure pointer to ISR handler
     mov rdi, rsp
-    call isr_handler
+    call InterruptHandler
 
     pop rax
     pop rbx

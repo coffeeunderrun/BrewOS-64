@@ -3,22 +3,20 @@
 
 #include <sys/types.h>
 
-typedef struct isr_registers isr_registers_t;
+namespace BrewOS {
+namespace Interrupts {
 
-typedef void (*isr_handler_t)(isr_registers_t *);
+typedef struct Registers Registers;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef void (*Handler)(Registers *regs);
 
-void init_int(void);
+void Initialize(void);
 
-err_t int_add_handler(unsigned int idx, isr_handler_t hnd);
+void AddHandler(int vector, Handler handler);
 
-err_t int_del_handler(unsigned int idx, isr_handler_t hnd);
+void RemoveHandler(int vector, Handler handler);
 
-#ifdef __cplusplus
-}
-#endif
+} // Interrupts
+} // BrewOS
 
 #endif // INTERRUPTS_H

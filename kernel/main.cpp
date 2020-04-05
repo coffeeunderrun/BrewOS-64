@@ -11,18 +11,22 @@ extern "C" void _init();
 
 extern "C" void __cxa_pure_virtual() { }
 
-extern "C" void kmain(void *mmap) __attribute__((noreturn));
+namespace BrewOS {
 
-void kmain(void *mmap)
+extern "C" void KernelMain(void *mmap) __attribute__((noreturn));
+
+void KernelMain(void *mmap)
 {
     // Initialize interrupt handler
-    init_int();
+    Interrupts::Initialize();
 
     // Initialize memory manager
-    init_mem(mmap);
+    Memory::Initialize(mmap);
 
     // Call global constructors
     _init();
 
     while(1);
 }
+
+} // BrewOS
