@@ -73,6 +73,6 @@ install-libc install-libk:
 
 hdd.img: all
 	@mkdir -p root
-	@cp -Pf boot/loader kernel/kernel root
+	@cp -fP boot/loader kernel/kernel root
 	@mke2fs -text2 -droot -F $@ 32M
 	@dd if=boot/boot of=$@ bs=512 count=2 conv=notrunc
