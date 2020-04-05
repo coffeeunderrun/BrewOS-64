@@ -9,8 +9,6 @@
 
 extern "C" void _init();
 
-extern "C" void __cxa_pure_virtual() { }
-
 namespace BrewOS {
 
 extern "C" void KernelMain(void *mmap) __attribute__((noreturn));

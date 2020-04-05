@@ -14,7 +14,7 @@ C_FLAGS  += -O3
 endif
 
 SHARED_SRCS := \
-	cpp/new.cpp \
+	cpp/libcpp.c cpp/new.cpp \
 	stdio/fprintf.c stdio/printf.c stdio/sprintf.c \
 	stdlib/heap.c \
 	string/memcmp.c string/memcpy.c string/memmove.c string/memset.c \
