@@ -1,14 +1,16 @@
 bits 64
 
-global entry
-
-extern kmain
+extern init_fpu, KernelMain
 
 section .text
 
+global entry
 entry:
     mov rsp, qword kernel_stack_top
-    jmp kmain
+
+    call init_fpu
+
+    jmp KernelMain
 
 section .bss
 

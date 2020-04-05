@@ -5,37 +5,44 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
+#include <arch/x86_64/arch.h>
+#include <arch/x86_64/interrupts.h>
 #include <errno.h>
 #include <interrupts.h>
 #include <memory.h>
 #include <string.h>
-#include <arch/x86_64/arch.h>
-#include <arch/x86_64/interrupts.h>
+
+extern const uintptr_t _kernel_start;
+extern const uintptr_t _kernel_data;
+extern const uintptr_t _kernel_end;
+
+namespace BrewOS {
+namespace Memory {
 
 // Memory Map Types
-#define MAP_AVAILABLE   1 // Available
-#define MAP_RESERVED    2 // Reserved (DO NOT USE)
-#define MAP_RECLAIMABLE 3 // ACPI Reclaimable (do NOT use until AFTER ACPI initialization)
-#define MMT_NONVOLATILE 4 // ACPI Non-volatile (DO NOT USE)
-#define MMT_BAD         5 // Bad (DO NOT USE)
+const uint64_t MAP_AVAILABLE   = 1; // Available
+const uint64_t MAP_RESERVED    = 2; // Reserved (DO NOT USE)
+const uint64_t MAP_RECLAIMABLE = 3; // ACPI Reclaimable (do NOT use until AFTER ACPI initialization)
+const uint64_t MAP_NONVOLATILE = 4; // ACPI Non-volatile (DO NOT USE)
+const uint64_t MAP_BAD         = 5; // Bad (DO NOT USE)
 
 // Page Translation Table Entry Field Bits
-#define PAGE_PRESENT   (1ull << 0)  // Set if loaded into physical memory
-#define PAGE_WRITE     (1ull << 1)  // Set if page can be written to, otherwise read-only
-#define PAGE_USER      (1ull << 2)  // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
-#define PAGE_PWT       (1ull << 3)  // Set for page-Level writethrough, otherwise writeback
-#define PAGE_PCD       (1ull << 4)  // Set if page-Level cache is disabled, otherwise enabled
-#define PAGE_ACCESSED  (1ull << 5)  // Set if page has been accessed
-#define PAGE_DIRTY     (1ull << 6)  // Set if page has been written to (lowest level in hierarchy only)
-#define PAGE_SIZE      (1ull << 7)  // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
-#define PAGE_GLOBAL    (1ull << 8)  // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
-#define PAGE_NOEXECUTE (1ull << 63) // Set if page shouldn't allow code execution
+const uint64_t PAGE_PRESENT   = 1ull << 0;  // Set if loaded into physical memory
+const uint64_t PAGE_WRITE     = 1ull << 1;  // Set if page can be written to, otherwise read-only
+const uint64_t PAGE_USER      = 1ull << 2;  // Set if page can be accessed by ring 3, otherwise only rings 0, 1, and 2
+const uint64_t PAGE_PWT       = 1ull << 3;  // Set for page-Level writethrough, otherwise writeback
+const uint64_t PAGE_PCD       = 1ull << 4;  // Set if page-Level cache is disabled, otherwise enabled
+const uint64_t PAGE_ACCESSED  = 1ull << 5;  // Set if page has been accessed
+const uint64_t PAGE_DIRTY     = 1ull << 6;  // Set if page has been written to (lowest level in hierarchy only)
+const uint64_t PAGE_SIZE      = 1ull << 7;  // Set if page is lowest level in hierarchy (P3E = 1 GiB, P2E = 2 MiB)
+const uint64_t PAGE_GLOBAL    = 1ull << 8;  // Set if page shouldn't invalidate on CR3 load (lowest level in hierarchy only)
+const uint64_t PAGE_NOEXECUTE = 1ull << 63; // Set if page shouldn't allow code execution
 
 // Align up to nearest 4 KiB boundary
-#define ALIGN(x) (((addr_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
+#define ALIGN(x) (((uintptr_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
 
 // Get lower half address of identity mapped virtual address
-#define PADDR(x) ((addr_t)(x) & 0x7FFFFFFF)
+#define PADDR(x) ((uintptr_t)(x) & 0x7FFFFFFF)
 
 typedef struct
 {
@@ -43,64 +50,56 @@ typedef struct
     uint64_t size; // Size of memory region in bytes
     uint32_t type; // Memory region type
     uint32_t attr; // ACPI v3 attributes
-} __attribute__((packed)) mmap_entry_t;
-
-typedef uint64_t addr_t;
-typedef uint64_t flag_t;
-typedef uint64_t page_entry_t;
+} __attribute__((packed)) MemMapEntry;
 
 typedef struct
 {
-    page_entry_t entries[512];
-} page_table_t;
+    uint64_t entries[512];
+} PageTable;
 
-static page_table_t *kernel_page_table_end;
+static PageTable *kernel_page_table_end;
 
-static addr_t *frame_stack;
+static uintptr_t *frame_stack;
 
-static mmap_entry_t *mmap_entry; // Pointer to current memory map entry
-static uint64_t mmap_size;       // Bytes remaining to process in current entry
-static addr_t mmap_addr;         // Physical address to process in current entry
+static MemMapEntry *mmap_entry; // Pointer to current memory map entry
+static uintptr_t mmap_addr;     // Physical address to process in current entry
+static size_t mmap_size;        // Bytes remaining to process in current entry
 
-static void push_stack_frame(addr_t);
-static addr_t pop_stack_frame(void);
-static addr_t pop_mmap_frame(void);
+static void PushStackFrame(uintptr_t addr);
+static uintptr_t PopStackFrame(void);
+static uintptr_t PopMemMapFrame(void);
 
-static err_t map_page(addr_t, flag_t, addr_t (*)(void));
-static err_t unmap_page(addr_t, void (*)(addr_t));
+static err_t MapPage(uintptr_t addr, int flags, uintptr_t (*pop)(void));
+static err_t UnmapPage(uintptr_t addr, void (*push)(uintptr_t));
 
-static void page_fault_handler(isr_registers_t *);
+static void PageFaultHandler(Interrupts::Registers *regs);
 
-static page_table_t *get_p4_table(addr_t);
-static page_table_t *get_p3_table(addr_t);
-static page_table_t *get_p2_table(addr_t);
-static page_table_t *get_p1_table(addr_t);
+static PageTable *GetP4Table(uintptr_t addr);
+static PageTable *GetP3Table(uintptr_t addr);
+static PageTable *GetP2Table(uintptr_t addr);
+static PageTable *GetP1Table(uintptr_t addr);
 
-static inline uint64_t get_p4e_index(addr_t);
-static inline uint64_t get_p3e_index(addr_t);
-static inline uint64_t get_p2e_index(addr_t);
-static inline uint64_t get_p1e_index(addr_t);
+static inline uint64_t GetP4EntryIndex(uintptr_t addr);
+static inline uint64_t GetP3EntryIndex(uintptr_t addr);
+static inline uint64_t GetP2EntryIndex(uintptr_t addr);
+static inline uint64_t GetP1EntryIndex(uintptr_t addr);
 
-static inline void inc_entry_count(page_entry_t *);
-static inline void dec_entry_count(page_entry_t *);
-static inline bool has_entries(page_entry_t);
-
-extern const uintptr_t _kernel_start;
-extern const uintptr_t _kernel_data;
-extern const uintptr_t _kernel_end;
+static inline void IncEntryCount(uint64_t *entry);
+static inline void DecEntryCount(uint64_t *entry);
+static inline bool HasEntries(uint64_t entry);
 
 static const uintptr_t kernel_start = (uintptr_t)&_kernel_start;
 static const uintptr_t kernel_data = (uintptr_t)&_kernel_data;
 static const uintptr_t kernel_end = (uintptr_t)&_kernel_end;
 
-void init_mem(void *mmap)
+void Initialize(void *mem_map)
 {
-    kernel_page_table_end = (page_table_t *)ALIGN(kernel_end);
+    kernel_page_table_end = (PageTable *)ALIGN(kernel_end);
 
-    page_table_t *p4 = kernel_page_table_end++;
-    page_table_t *p3 = kernel_page_table_end++;
-    page_table_t *p2 = kernel_page_table_end++;
-    page_table_t *p1 = NULL;
+    PageTable *p4 = kernel_page_table_end++;
+    PageTable *p3 = kernel_page_table_end++;
+    PageTable *p2 = kernel_page_table_end++;
+    PageTable *p1 = nullptr;
 
     // Zero out P4, P3, and P2
     memset(p4, 0, 0x3000);
@@ -110,12 +109,12 @@ void init_mem(void *mmap)
     p3->entries[510] = PADDR(p2) | PAGE_PRESENT | PAGE_WRITE; // Last 1 GiB
 
     // Increase P3 present entry count in P4 entry
-    inc_entry_count(&p4->entries[511]);
+    IncEntryCount(&p4->entries[511]);
 
     // Identity map individual pages
-    for(addr_t addr = 0; addr < PADDR(ALIGN(kernel_end)); addr += 0x1000)
+    for(uintptr_t addr = 0; addr < PADDR(ALIGN(kernel_end)); addr += 0x1000)
     {
-        uint64_t p2e_idx = get_p2e_index(addr);
+        uint64_t p2e_idx = GetP2EntryIndex(addr);
         if(!(p2->entries[p2e_idx] & PAGE_PRESENT))
         {
             p1 = kernel_page_table_end++;
@@ -123,10 +122,10 @@ void init_mem(void *mmap)
             memset(p1, 0, 0x1000);
 
             // Increase present P2 entry count in P3 entry
-            inc_entry_count(&p3->entries[510]);
+            IncEntryCount(&p3->entries[510]);
         }
 
-        uint64_t p1e_idx = get_p1e_index(addr);
+        uint64_t p1e_idx = GetP1EntryIndex(addr);
         if(addr >= PADDR(ALIGN(kernel_start)) && addr < PADDR(ALIGN(kernel_data)))
         {
             // Kernel code is read-only and executable
@@ -139,60 +138,60 @@ void init_mem(void *mmap)
         }
 
         // Increase P1 present entry count in P2 entry
-        inc_entry_count(&p2->entries[p2e_idx]);
+        IncEntryCount(&p2->entries[p2e_idx]);
     }
 
     // Load new page tables
     load_pml4(PADDR(p4));
 
     // Bottom of frame stack starts immediately after kernel
-    frame_stack = (addr_t *)ALIGN(kernel_end);
+    frame_stack = (uintptr_t *)ALIGN(kernel_end);
 
     // Initialize memory map pop frame function
-    mmap_entry = (mmap_entry_t *)mmap;
+    mmap_entry = (MemMapEntry *)mem_map;
     mmap_addr = ALIGN(mmap_entry->base);
     mmap_size = mmap_entry->size;
 
     // Add available memory map frames to stack
-    addr_t addr;
-    while(mmap_entry && (addr = pop_mmap_frame()) > 0)
+    uintptr_t addr;
+    while(mmap_entry && (addr = PopMemMapFrame()) > 0)
     {
-        push_stack_frame(addr);
+        PushStackFrame(addr);
     }
 
-    int_add_handler(ISR_VECTOR_PF, page_fault_handler);
+    Interrupts::AddHandler(Interrupts::VECTOR_PF, PageFaultHandler);
 }
 
-err_t mem_alloc(void *addr, bool exec, bool rw, bool usr)
+err_t Allocate(void *addr, bool execute, bool write, bool user)
 {
-    flag_t flags = 0;
+    int flags = 0;
 
-    if(!exec)
+    if(!execute)
     {
         flags |= PAGE_NOEXECUTE;
     }
 
-    if(rw)
+    if(write)
     {
         flags |= PAGE_WRITE;
     }
 
-    if(usr)
+    if(user)
     {
         flags |= PAGE_USER;
     }
 
-    return map_page((addr_t)addr, flags, pop_stack_frame);
+    return MapPage((uintptr_t)addr, flags, PopStackFrame);
 }
 
-err_t mem_free(void *addr)
+err_t Free(void *addr)
 {
-    return unmap_page((addr_t)addr, push_stack_frame);
+    return UnmapPage((uintptr_t)addr, PushStackFrame);
 }
 
-static void push_stack_frame(addr_t paddr)
+static void PushStackFrame(uintptr_t paddr)
 {
-    err_t err = map_page((addr_t)frame_stack, PAGE_WRITE | PAGE_GLOBAL, pop_mmap_frame);
+    err_t err = MapPage((uintptr_t)frame_stack, PAGE_WRITE | PAGE_GLOBAL, PopMemMapFrame);
     if(err != OK)
     {
         return;
@@ -202,9 +201,9 @@ static void push_stack_frame(addr_t paddr)
     *frame_stack++ = paddr;
 }
 
-static addr_t pop_stack_frame(void)
+static uintptr_t PopStackFrame(void)
 {
-    if(frame_stack > (addr_t *)ALIGN(kernel_end))
+    if(frame_stack > (uintptr_t *)ALIGN(kernel_end))
     {
         // Move frame stack pointer down and fetch physical address
         return *--frame_stack;
@@ -214,7 +213,7 @@ static addr_t pop_stack_frame(void)
     return 0;
 }
 
-static addr_t pop_mmap_frame(void)
+static uintptr_t PopMemMapFrame(void)
 {
     while(mmap_entry && mmap_entry->type)
     {
@@ -225,7 +224,7 @@ static addr_t pop_mmap_frame(void)
             continue;
         }
 
-        addr_t addr = mmap_addr;
+        uintptr_t addr = mmap_addr;
         mmap_addr += 0x1000; // Advance to next 4 KiB
         mmap_size -= 0x1000; // Reduce remaining region size by 4 KiB
 
@@ -238,23 +237,23 @@ static addr_t pop_mmap_frame(void)
         return addr;
     }
 
-    mmap_entry = NULL;
+    mmap_entry = nullptr;
 
     return 0;
 }
 
-static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void))
+static err_t MapPage(uintptr_t vaddr, int flags, uintptr_t (*pop)(void))
 {
-    page_table_t *p4 = get_p4_table(vaddr);
-    page_table_t *p3 = get_p3_table(vaddr);
-    page_table_t *p2 = get_p2_table(vaddr);
-    page_table_t *p1 = get_p1_table(vaddr);
+    PageTable *p4 = GetP4Table(vaddr);
+    PageTable *p3 = GetP3Table(vaddr);
+    PageTable *p2 = GetP2Table(vaddr);
+    PageTable *p1 = GetP1Table(vaddr);
 
-    uint64_t p4e_idx = get_p4e_index(vaddr);
+    uint64_t p4e_idx = GetP4EntryIndex(vaddr);
     if(!(p4->entries[p4e_idx] & PAGE_PRESENT))
     {
         // Add P3 table for requested address
-        addr_t paddr = (*pop_frame_func)();
+        uintptr_t paddr = (*pop)();
         if(paddr == 0)
         {
             // No frames available
@@ -267,11 +266,11 @@ static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void)
         memset(p3, 0, 0x1000);
     }
 
-    uint64_t p3e_idx = get_p3e_index(vaddr);
+    uint64_t p3e_idx = GetP3EntryIndex(vaddr);
     if(!(p3->entries[p3e_idx] & PAGE_PRESENT))
     {
         // Add P2 table for requested address
-        addr_t paddr = (*pop_frame_func)();
+        uintptr_t paddr = (*pop)();
         if(paddr == 0)
         {
             // No frames available
@@ -284,14 +283,14 @@ static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void)
         memset(p2, 0, 0x1000);
 
         // Increase P3 present entry count in P4 entry
-        inc_entry_count(&p4->entries[p4e_idx]);
+        IncEntryCount(&p4->entries[p4e_idx]);
     }
 
-    uint64_t p2e_idx = get_p2e_index(vaddr);
+    uint64_t p2e_idx = GetP2EntryIndex(vaddr);
     if(!(p2->entries[p2e_idx] & PAGE_PRESENT))
     {
         // Add P1 table for requested address
-        addr_t paddr = (*pop_frame_func)();
+        uintptr_t paddr = (*pop)();
         if(paddr == 0)
         {
             // No frames available
@@ -304,14 +303,14 @@ static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void)
         memset(p1, 0, 0x1000);
 
         // Increase P2 present entry count in P3 entry
-        inc_entry_count(&p3->entries[p3e_idx]);
+        IncEntryCount(&p3->entries[p3e_idx]);
     }
 
-    uint64_t p1e_idx = get_p1e_index(vaddr);
+    uint64_t p1e_idx = GetP1EntryIndex(vaddr);
     if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
         // Assign frame to page for requested address
-        addr_t paddr = (*pop_frame_func)();
+        uintptr_t paddr = (*pop)();
         if(paddr == 0)
         {
             // No frames available
@@ -322,17 +321,17 @@ static err_t map_page(addr_t vaddr, flag_t flags, addr_t (*pop_frame_func)(void)
         flush_page(p1);
 
         // Increase P1 present entry count in P2 entry
-        inc_entry_count(&p2->entries[p2e_idx]);
+        IncEntryCount(&p2->entries[p2e_idx]);
     }
 
     return OK;
 }
 
-static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
+static err_t UnmapPage(uintptr_t vaddr, void (*push)(uintptr_t))
 {
     // Unmap page
-    page_table_t *p1 = get_p1_table(vaddr);
-    uint64_t p1e_idx = get_p1e_index(vaddr);
+    PageTable *p1 = GetP1Table(vaddr);
+    uint64_t p1e_idx = GetP1EntryIndex(vaddr);
     if(!(p1->entries[p1e_idx] & PAGE_PRESENT))
     {
         // P1 entry is not present
@@ -340,23 +339,23 @@ static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     }
 
     // Get physical address from P1 entry
-    addr_t paddr = p1->entries[p1e_idx] & 0x7FFFF000;
+    uintptr_t paddr = p1->entries[p1e_idx] & 0x7FFFF000;
 
     // Update P1 table
     p1->entries[p1e_idx] = ~PAGE_PRESENT;
     flush_page(p1);
 
     // Put frame back on stack
-    (*push_frame_func)(paddr);
+    (*push)(paddr);
 
     // Unmap P1 table if no more entries present
-    page_table_t *p2 = get_p2_table(vaddr);
-    uint64_t p2e_idx = get_p2e_index(vaddr);
+    PageTable *p2 = GetP2Table(vaddr);
+    uint64_t p2e_idx = GetP2EntryIndex(vaddr);
 
     // Decrease P1 present entry count in P2 entry
-    dec_entry_count(&p2->entries[p2e_idx]);
+    DecEntryCount(&p2->entries[p2e_idx]);
 
-    if(has_entries(p2->entries[p2e_idx]))
+    if(HasEntries(p2->entries[p2e_idx]))
     {
         // There are still P1 entries present
         return OK;
@@ -370,16 +369,16 @@ static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     flush_page(p2);
 
     // Put frame back on stack
-    (*push_frame_func)(paddr);
+    (*push)(paddr);
 
     // Unmap P2 table if no more entries present
-    page_table_t *p3 = get_p3_table(vaddr);
-    uint64_t p3e_idx = get_p3e_index(vaddr);
+    PageTable *p3 = GetP3Table(vaddr);
+    uint64_t p3e_idx = GetP3EntryIndex(vaddr);
 
     // Decrease P2 present entry count in P3 entry
-    dec_entry_count(&p3->entries[p3e_idx]);
+    DecEntryCount(&p3->entries[p3e_idx]);
 
-    if(has_entries(p3->entries[p3e_idx]))
+    if(HasEntries(p3->entries[p3e_idx]))
     {
         // There are still P2 entries present
         return OK;
@@ -393,16 +392,16 @@ static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     flush_page(p3);
 
     // Put frame back on stack
-    (*push_frame_func)(paddr);
+    (*push)(paddr);
 
     // Unmap P3 table if no more entries present
-    page_table_t *p4 = get_p4_table(vaddr);
-    uint64_t p4e_idx = get_p4e_index(vaddr);
+    PageTable *p4 = GetP4Table(vaddr);
+    uint64_t p4e_idx = GetP4EntryIndex(vaddr);
 
     // Decrease P3 present entry count in P4 entry
-    dec_entry_count(&p4->entries[p4e_idx]);
+    DecEntryCount(&p4->entries[p4e_idx]);
 
-    if(has_entries(p4->entries[p4e_idx]))
+    if(HasEntries(p4->entries[p4e_idx]))
     {
         // There are still P2 entries present
         return OK;
@@ -416,16 +415,16 @@ static err_t unmap_page(addr_t vaddr, void (*push_frame_func)(addr_t))
     flush_page(p4);
 
     // Put frame back on stack
-    (*push_frame_func)(paddr);
+    (*push)(paddr);
 
     return OK;
 }
 
-static void page_fault_handler(isr_registers_t *regs)
+static void PageFaultHandler(Interrupts::Registers *regs)
 {
 }
 
-static page_table_t *get_p4_table(addr_t vaddr)
+static PageTable *GetP4Table(uintptr_t vaddr)
 {
     // Keep sign extend
     uint64_t p4 = vaddr & 0xFFFF000000000000;
@@ -436,10 +435,10 @@ static page_table_t *get_p4_table(addr_t vaddr)
     p4 |= 510ull << 21;
     p4 |= 510ull << 12;
 
-    return (page_table_t *)p4;
+    return (PageTable *)p4;
 }
 
-static page_table_t *get_p3_table(addr_t vaddr)
+static PageTable *GetP3Table(uintptr_t vaddr)
 {
     // Keep sign extend
     uint64_t p3 = vaddr & 0xFFFF000000000000;
@@ -452,10 +451,10 @@ static page_table_t *get_p3_table(addr_t vaddr)
     // Get index of P3 table
     p3 |= vaddr >> 27 & 0x1FF000;
 
-    return (page_table_t *)p3;
+    return (PageTable *)p3;
 }
 
-static page_table_t *get_p2_table(addr_t vaddr)
+static PageTable *GetP2Table(uintptr_t vaddr)
 {
     // Keep sign extend
     uint64_t p3 = vaddr & 0xFFFF000000000000;
@@ -467,10 +466,10 @@ static page_table_t *get_p2_table(addr_t vaddr)
     // Get index of P3 and P2 tables
     p3 |= vaddr >> 18 & 0x3FFFF000;
 
-    return (page_table_t *)p3;
+    return (PageTable *)p3;
 }
 
-static page_table_t *get_p1_table(addr_t vaddr)
+static PageTable *GetP1Table(uintptr_t vaddr)
 {
     // Keep sign extend
     uint64_t p3 = vaddr & 0xFFFF000000000000;
@@ -481,30 +480,30 @@ static page_table_t *get_p1_table(addr_t vaddr)
     // Get index of P3, P2, and P1 tables
     p3 |= vaddr >> 9 & 0x7FFFFFF000;
 
-    return (page_table_t *)p3;
+    return (PageTable *)p3;
 }
 
-static inline uint64_t get_p4e_index(addr_t vaddr)
+static inline uint64_t GetP4EntryIndex(uintptr_t vaddr)
 {
     return (uint64_t)(vaddr >> 39 & 0x1FF);
 }
 
-static inline uint64_t get_p3e_index(addr_t vaddr)
+static inline uint64_t GetP3EntryIndex(uintptr_t vaddr)
 {
     return (uint64_t)(vaddr >> 30 & 0x1FF);
 }
 
-static inline uint64_t get_p2e_index(addr_t vaddr)
+static inline uint64_t GetP2EntryIndex(uintptr_t vaddr)
 {
     return (uint64_t)(vaddr >> 21 & 0x1FF);
 }
 
-static inline uint64_t get_p1e_index(addr_t vaddr)
+static inline uint64_t GetP1EntryIndex(uintptr_t vaddr)
 {
     return (uint64_t)(vaddr >> 12 & 0x1FF);
 }
 
-static inline void inc_entry_count(page_entry_t *entry)
+static inline void IncEntryCount(uint64_t *entry)
 {
     uint64_t count = (*entry >> 52 & 0x1FF) + 1;
 
@@ -515,7 +514,7 @@ static inline void inc_entry_count(page_entry_t *entry)
     *entry |= count << 52;
 }
 
-static inline void dec_entry_count(page_entry_t *entry)
+static inline void DecEntryCount(uint64_t *entry)
 {
     uint64_t count = (*entry >> 52 & 0x1FF) - 1;
 
@@ -526,7 +525,10 @@ static inline void dec_entry_count(page_entry_t *entry)
     *entry |= count << 52;
 }
 
-static inline bool has_entries(page_entry_t entry)
+static inline bool HasEntries(uint64_t entry)
 {
     return (entry & (511ull << 52)) != 0;
 }
+
+} // Memory
+} // BrewOS

@@ -155,7 +155,7 @@ error_not_found:
     jmp reboot
 
 filesize: dq 0
-filename: db "brewkern"
+filename: db "kernel"
 .length:  equ $ - filename
 
 msg:

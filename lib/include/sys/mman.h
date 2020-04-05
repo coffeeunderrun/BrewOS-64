@@ -10,6 +10,14 @@
 
 #define MAP_FAILED ((void *) - 1)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SYS_MMAN_H

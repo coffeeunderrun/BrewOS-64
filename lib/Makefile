@@ -1,64 +1,81 @@
-ASFLAG += -felf64 -mamd64
+AS_FLAGS += -felf64 -mamd64
 
-ifeq ($(DEBUG), 1)
-ASFLAG += -gdwarf2
-CCFLAG += -gdwarf-2 -O0
+C_FLAGS      += -Iinclude
+C_FLAGS_LIBC := -D__LIBC
+C_FLAGS_LIBK := -D__LIBK -ffreestanding -mno-red-zone -mcmodel=kernel
+
+CXX_FLAGS += -fno-exceptions -fno-rtti
+
+ifeq ($(BUILD), debug)
+AS_FLAGS += -gdwarf2
+C_FLAGS  += -gdwarf-2 -O0
 else
-CCFLAG += -O3
+C_FLAGS  += -O3
 endif
 
-CCFLAG += -ffreestanding -nostdlib
-CCLIBC := -D__LIBC
-CCLIBK := -D__LIBK -mno-red-zone -zmax-page-size=0x1000 -mcmodel=kernel
+SHARED_SRCS := \
+	cpp/libcpp.c cpp/new.cpp \
+	stdio/fprintf.c stdio/printf.c stdio/sprintf.c \
+	stdlib/heap.c \
+	string/memcmp.c string/memcpy.c string/memmove.c string/memset.c \
+	mman/mmap.c \
+	unistd/write.c
 
-LIBC_SRCS := heap.c fprintf.c memcmp.c memcpy.c memmove.c memset.c mmap.c printf.c \
-	sprintf.c vector.c write.c
-LIBC_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libc.o, $(SHRD_SRCS) $(LIBC_SRCS)))
-LIBC_DEPS := $(LIBC_OBJS:.o=.d)
+LIBC_SRCS := $(SHARED_SRCS)
+LIBC_OBJS := $(addsuffix .libc.o, $(LIBC_SRCS))
 
-LIBK_OBJS := $(addprefix $(OBJ_PATH)/, $(addsuffix .libk.o, $(SHRD_SRCS) $(LIBC_SRCS)))
-LIBK_DEPS := $(LIBK_OBJS:.o=.d)
+LIBK_SRCS := $(SHARED_SRCS)
+LIBK_OBJS := $(addsuffix .libk.o, $(LIBK_SRCS))
 
-VPATH = mman:stdio:stdlib:string:unistd
+ALL_OBJS := $(CRT_OBJS) $(LIBC_OBJS) $(LIBK_OBJS) crt0.o crt1.o crti.o crtn.o
+ALL_DEPS := $(ALL_OBJS:.o=.d)
 
-libc: $(OBJ_PATH)/libc.a
+LIBC_OUT := libc.a crt0.o crt1.o crti.o crtn.o
+LIBC_SYS := $(addprefix $(LIB_PATH)/, $(LIBC_OUT))
 
-libk: $(OBJ_PATH)/libk.a
+LIBK_OUT := libk.a crti.o crtn.o
+LIBK_SYS := $(addprefix $(LIB_PATH)/, $(LIBK_OUT))
 
 clean:
-	@rm -f $(LIBC_OBJS) $(LIBC_DEPS) $(LIBK_OBJS) $(LIBK_DEPS)
-	@rm -f $(OBJ_PATH)/libc.a $(OBJ_PATH)/libk.a
+	@rm -rf $(INC_PATH) $(LIB_PATH) $(ALL_OBJS) $(ALL_DEPS) libc.a libk.a
 
-$(LIBC_OBJS) $(LIBK_OBJS) $(OBJ_PATH)/libc.a $(OBJ_PATH)/libk.a: | $(OBJ_PATH)
+install-headers: | $(INC_PATH)
+	@cp -rfPT include $(INC_PATH)
 
-$(OBJ_PATH)/libc.a: $(LIBC_OBJS)
-	@echo "Archiving $(@F)..."
-	@$(AR) -rcs $@ $^
+install-libc: $(LIBC_SYS) install-headers
 
-$(OBJ_PATH)/libk.a: $(LIBK_OBJS)
-	@echo "Archiving $(@F)..."
-	@$(AR) -rcs $@ $^
+install-libk: $(LIBK_SYS) install-headers
 
-$(OBJ_PATH)/%.s.libc.o: %.s
-	@echo "Assembling $(@F)..."
-	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
-	@$(AS) $(ASFLAG) -o$@ $<
+libc: $(LIBC_OUT)
 
-$(OBJ_PATH)/%.c.libc.o: %.c
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) $(CCLIBC) -MMD -c -o$@ $<
+libk: $(LIBK_OUT)
 
-$(OBJ_PATH)/%.s.libk.o: %.s
-	@echo "Assembling $(@F)..."
-	@$(AS) $(ASFLAG) -M $< > $(@:.o=.d)
-	@$(AS) $(ASFLAG) -o$@ $<
+libc.a: $(LIBC_OBJS)
+	$(AR) -rcs $@ $^
 
-$(OBJ_PATH)/%.c.libk.o: %.c
-	@echo "Compiling $(@F)..."
-	@$(CC) $(CCFLAG) $(CCLIBK) -MMD -c -o$@ $<
+libk.a: $(LIBK_OBJS)
+	$(AR) -rcs $@ $^
 
-$(OBJ_PATH):
-	@echo "Making $@..."
+%.o: arch/$(MACHINE)/%.s
+	$(AS) $(AS_FLAGS) -M $< > $(@:.o=.d)
+	$(AS) $(AS_FLAGS) -o$@ $<
+
+%.c.libc.o: %.c
+	$(CC) $(CC_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBC) -MMD -c -o$@ $<
+
+%.cpp.libc.o: %.cpp
+	$(CXX) $(CXX_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBC) -MMD -c -o$@ $<
+
+%.c.libk.o: %.c
+	$(CC) $(CC_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBK) -MMD -c -o$@ $<
+
+%.cpp.libk.o: %.cpp
+	$(CXX) $(CXX_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBK) -MMD -c -o$@ $<
+
+$(LIB_PATH)/%: % | $(LIB_PATH)
+	cp -Pf $< $@
+
+$(INC_PATH) $(LIB_PATH):
 	@mkdir -p $@
 
--include $(LIBC_DEPS) $(LIBK_DEPS)
+-include $(ALL_DEPS)
