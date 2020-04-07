@@ -20,8 +20,10 @@ CRTB_OBJ := $(shell $(CXX) $(CXX_FLAGS) $(C_FLAGS) -print-file-name=crtbegin.o)
 CRTE_OBJ := $(shell $(CXX) $(CXX_FLAGS) $(C_FLAGS) -print-file-name=crtend.o)
 
 KERN_SRCS := \
-	arch/$(MACHINE)/arch.s arch/$(MACHINE)/entry.s arch/$(MACHINE)/interrupts.s \
-	arch/$(MACHINE)/interrupts.cpp arch/$(MACHINE)/memory.cpp \
+	arch/$(MACHINE)/arch.s arch/$(MACHINE)/entry.s \
+	arch/$(MACHINE)/interrupts.s arch/$(MACHINE)/interrupts.cpp \
+	arch/$(MACHINE)/memory.cpp \
+	arch/$(MACHINE)/syscalls.s arch/$(MACHINE)/syscalls.cpp \
 	main.cpp
 KERN_OBJS := $(addsuffix .o, $(KERN_SRCS))
 

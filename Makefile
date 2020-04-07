@@ -9,7 +9,7 @@ LIB_PATH := $(CURDIR)/sysroot/usr/lib
 # ASSEMBLER
 ifeq ($(MACHINE), x86_64)
 AS       := yasm
-AS_FLAGS := -pnasm
+AS_FLAGS :=
 endif
 
 # ARCHIVER

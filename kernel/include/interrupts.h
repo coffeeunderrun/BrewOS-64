@@ -8,13 +8,13 @@ namespace Interrupts {
 
 typedef struct Registers Registers;
 
-typedef void (*Handler)(Registers *regs);
+typedef void (*Callback)(Registers *regs);
 
 void Initialize(void);
 
-void AddHandler(int vector, Handler handler);
+void AddCallback(int vector, Callback callback);
 
-void RemoveHandler(int vector, Handler handler);
+void RemoveCallback(int vector, Callback callback);
 
 } // Interrupts
 } // BrewOS
