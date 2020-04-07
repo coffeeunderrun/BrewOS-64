@@ -134,13 +134,6 @@ stage2:
     or eax, 0x80010001 ; Set PE, WP, and PG
     mov cr0, eax
 
-    mov ax, gdt.data
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-
     ; Jump to long mode
     jmp gdt.code:trampoline
 
@@ -168,6 +161,13 @@ trampoline:
     ; Load GDT register again using higher half pointer
     mov rax, qword gdt.high + vo
     lgdt [rax]
+
+    mov ax, gdt.data
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
 
     ; Load ELF program segments into proper locations
     mov rax, [kb + 0x20]  ; Program header offset
