@@ -1,17 +1,14 @@
-/*
- * Assumptions
- * - Loader disabled interrupts
- * - Loader initialized GDT
- */
-
 #include <interrupts.h>
 #include <memory.h>
+#include <syscalls.h>
 
-extern "C" void _init();
+extern "C"
+void _init();
 
 namespace BrewOS {
 
-extern "C" void KernelMain(void *mmap) __attribute__((noreturn));
+extern "C"
+void KernelMain(void *mmap) __attribute__((noreturn));
 
 void KernelMain(void *mmap)
 {
@@ -23,6 +20,9 @@ void KernelMain(void *mmap)
 
     // Call global constructors
     _init();
+
+    // Initialize system calls
+    Syscalls::Initialize();
 
     while(1);
 }

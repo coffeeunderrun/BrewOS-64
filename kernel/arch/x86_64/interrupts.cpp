@@ -4,9 +4,8 @@
 
 extern "C"
 {
-     void init_pics(void);
-     void load_idt(void);
-     void clear_irq(uint64_t irq);
+    void init_interrupts(void);
+    void clear_irq(uint64_t irq);
 }
 
 namespace BrewOS {
@@ -14,19 +13,19 @@ namespace Interrupts {
 
 void Initialize(void)
 {
-    init_pics();
-    load_idt();
+    init_interrupts();
 }
 
-void AddHandler(int vector, Handler handler)
+void AddCallback(int vector, Callback callback)
 {
 }
 
-void RemoveHandler(int vector, Handler handler)
+void RemoveCallback(int vector, Callback callback)
 {
 }
 
-extern "C" void InterruptHandler(Registers *regs)
+extern "C"
+void InterruptHandler(Registers *regs)
 {
     clear_irq(regs->vector);
 }
