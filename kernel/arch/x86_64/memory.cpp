@@ -159,7 +159,7 @@ void Initialize(void *mem_map)
         PushStackFrame(addr);
     }
 
-    Interrupts::AddHandler(Interrupts::VECTOR_PF, PageFaultHandler);
+    Interrupts::AddCallback(Interrupts::VECTOR_PF, PageFaultHandler);
 }
 
 err_t Allocate(void *addr, bool execute, bool write, bool user)

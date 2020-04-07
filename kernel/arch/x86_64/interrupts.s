@@ -16,8 +16,8 @@ ICW4           equ 0x1
 
 %macro ISR_NO_ERROR 1-2 0
 isr%1:
-    push %2 ; Error Low
-    push %1 ; Vector Low
+    push %2 ; Error
+    push %1 ; Vector
     jmp isr_stub
 %endmacro
 
@@ -38,28 +38,8 @@ isr%1:
 
 section .text
 
-; Tell the PIC that the interrupt has been handled
-; Interrupt vector to be clear in AL
-; Vectors 32-39, originally 0-7, are PIC1
-; Vectors 40-47, originally 8-15, are PIC2
-global clear_irq
-clear_irq:
-    cmp al, 32
-    jb .done
-    cmp al, 47
-    ja .done
-    cmp al, 40
-    mov al, PIC_END_IRQ
-    mov dx, PIC1_CTRL_PORT
-    jb .1
-    mov dx, PIC2_CTRL_PORT
-.1: out dx, al
-.done:
-    ret
-
-; Enable PICs and remap hardware IRQ vectors
-global init_pics
-init_pics:
+global init_interrupts
+init_interrupts:
     ; Initialize programmable interrupt controllers
     mov al, ICW1
     out PIC1_CTRL_PORT, al
@@ -86,16 +66,14 @@ init_pics:
     xor al, al
     out PIC1_DATA_PORT, al
     out PIC2_DATA_PORT, al
-    ret
 
-global load_idt
-load_idt:
     ; Zero out IDT
     xor rax, rax
     mov rcx, 0x200
     mov rdi, qword idt
     rep stosq
 
+    ; Load entries into IDT
     LOAD_IDT_ENTRY 0  ; Divide by zero error
     LOAD_IDT_ENTRY 1  ; Debug
     LOAD_IDT_ENTRY 2  ; NMI
@@ -143,15 +121,30 @@ load_idt:
     LOAD_IDT_ENTRY 46 ; Primary hard disk
     LOAD_IDT_ENTRY 47 ; Secondary hard disk
 
-    ; Vectors 48 - 127 are unused
-
-    LOAD_IDT_ENTRY 128, 0x8, 0xEE ; Syscall
-
-    ; Vectors 129 - 255 are unused
+    ; Vectors 48 - 255 are unused
 
     mov rax, qword idt_ptr
     lidt [rax]
     sti
+    ret
+
+; Tell the PIC that the interrupt has been handled
+; Interrupt vector to be clear in AL
+; Vectors 32-39, originally 0-7, are PIC1
+; Vectors 40-47, originally 8-15, are PIC2
+global clear_irq
+clear_irq:
+    cmp al, 32
+    jb .done
+    cmp al, 47
+    ja .done
+    cmp al, 40
+    mov al, PIC_END_IRQ
+    mov dx, PIC1_CTRL_PORT
+    jb .1
+    mov dx, PIC2_CTRL_PORT
+.1: out dx, al
+.done:
     ret
 
 ; Add descriptor entry to IDT
@@ -249,7 +242,6 @@ ISR_NO_ERROR 16
 ISR_NO_ERROR 18
 ISR_NO_ERROR 19
 ISR_NO_ERROR 20
-ISR_NO_ERROR 128
 
 ; Hardware interrupts
 ISR_NO_ERROR 32, 0
