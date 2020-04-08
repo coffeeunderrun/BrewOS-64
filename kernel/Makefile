@@ -24,6 +24,7 @@ KERN_SRCS := \
 	arch/$(MACHINE)/interrupts.s arch/$(MACHINE)/interrupts.cpp \
 	arch/$(MACHINE)/memory.cpp \
 	arch/$(MACHINE)/syscalls.s arch/$(MACHINE)/syscalls.cpp \
+	syscalls/mmap.cpp syscalls/write.cpp \
 	main.cpp
 KERN_OBJS := $(addsuffix .o, $(KERN_SRCS))
 
