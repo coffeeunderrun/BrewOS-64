@@ -1,7 +1,6 @@
 AS_FLAGS += -felf64 -mamd64
 
-# TODO: Include -fbuiltin in C_FLAGS when C library supports all necessary functions
-C_FLAGS += -Iinclude -ffreestanding -mno-red-zone -mcmodel=kernel
+C_FLAGS += -Iinclude -ffreestanding -fbuiltin -mno-red-zone -mcmodel=kernel
 
 CXX_FLAGS += -fno-exceptions -fno-rtti
 
