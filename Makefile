@@ -1,6 +1,7 @@
 OS      ?= brewos
 BUILD   ?= debug
 MACHINE ?= x86_64
+TARGET  ?= $(MACHINE)-$(OS)
 
 # SYSROOT
 INC_PATH := $(CURDIR)/sysroot/usr/include
@@ -13,7 +14,7 @@ AS_FLAGS :=
 endif
 
 # ARCHIVER
-AR       := $(MACHINE)-$(OS)-ar
+AR       := $(TARGET)-ar
 AR_FLAGS :=
 
 # C AND C++ COMPILER FLAGS
@@ -24,15 +25,15 @@ C_FLAGS += -masm=intel
 endif
 
 # C COMPILER
-CC       := $(MACHINE)-$(OS)-gcc
+CC       := $(TARGET)-gcc
 CC_FLAGS := -std=gnu17
 
 # C++ COMPILER
-CXX       := $(MACHINE)-$(OS)-g++
+CXX       := $(TARGET)-g++
 CXX_FLAGS := -std=gnu++17
 
 # LINKER
-LD       := $(MACHINE)-$(OS)-ld
+LD       := $(TARGET)-ld
 LD_FLAGS :=
 
 ifeq ($(MACHINE), x86_64)

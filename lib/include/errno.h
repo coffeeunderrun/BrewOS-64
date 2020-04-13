@@ -47,40 +47,43 @@
 #define ENFILE          41 // Too many files open in system
 #define ENOBUFS         42 // No buffer space available
 #define ENODATA         43 // [OB XSR] [Option Start] No message is available on the STREAM head read queue. [Option End // [ENODEV // No such device
-#define ENOENT          44 // No such file or directory
-#define ENOEXEC         45 // Executable file format error
-#define ENOLCK          46 // No locks available
-#define ENOLINK         47 // Reserved
-#define ENOMEM          48 // Not enough space
-#define ENOMSG          49 // No message of the desired type
-#define ENOPROTOOPT     50 // Protocol not available
-#define ENOSPC          51 // No space left on device
-#define ENOSR           52 // [OB XSR] [Option Start] No STREAM resources. [Option End // [ENOSTR // [OB XSR] [Option Start] Not a STREAM. [Option End // [ENOSYS // Functionality not supported
-#define ENOTCONN        53 // The socket is not connected
-#define ENOTDIR         54 // Not a directory or a symbolic link to a directory
-#define ENOTEMPTY       55 // Directory not empty
-#define ENOTRECOVERABLE 56 // State not recoverable
-#define ENOTSOCK        57 // Not a socket
-#define ENOTSUP         58 // Not supported (may be the same value as [EOPNOTSUPP])
-#define ENOTTY          59 // Inappropriate I/O control operation
-#define ENXIO           60 // No such device or address
-#define EOPNOTSUPP      61 // Operation not supported on socket (may be the same value as [ENOTSUP])
-#define EOVERFLOW       62 // Value too large to be stored in data type
-#define EOWNERDEAD      63 // Previous owner died
-#define EPERM           64 // Operation not permitted
-#define EPIPE           65 // Broken pipe
-#define EPROTO          66 // Protocol error
-#define EPROTONOSUPPORT 67 // Protocol not supported
-#define EPROTOTYPE      68 // Protocol wrong type for socket
-#define ERANGE          69 // Result too large
-#define EROFS           70 // Read-only file system
-#define ESPIPE          71 // Invalid seek
-#define ESRCH           72 // No such process
-#define ESTALE          73 // Reserved
-#define ETIME           74 // [OB XSR] [Option Start] Stream ioctl() timeout. [Option End // [ETIMEDOUT // Connection timed out
-#define ETXTBSY         75 // Text file busy
-#define EWOULDBLOCK     76 // Operation would block (may be the same value as [EAGAIN])
-#define EXDEV           77 // Cross-device link
+#define ENODEV          44 //
+#define ENOENT          45 // No such file or directory
+#define ENOEXEC         46 // Executable file format error
+#define ENOLCK          47 // No locks available
+#define ENOLINK         48 // Reserved
+#define ENOMEM          49 // Not enough space
+#define ENOMSG          50 // No message of the desired type
+#define ENOPROTOOPT     51 // Protocol not available
+#define ENOSPC          52 // No space left on device
+#define ENOSR           53 // [OB XSR] [Option Start] No STREAM resources. [Option End // [ENOSTR // [OB XSR] [Option Start] Not a STREAM. [Option End // [ENOSYS // Functionality not supported
+#define ENOSYS          54 //
+#define ENOTCONN        55 // The socket is not connected
+#define ENOTDIR         56 // Not a directory or a symbolic link to a directory
+#define ENOTEMPTY       57 // Directory not empty
+#define ENOTRECOVERABLE 58 // State not recoverable
+#define ENOTSOCK        59 // Not a socket
+#define ENOTSUP         60 // Not supported (may be the same value as [EOPNOTSUPP])
+#define ENOTTY          61 // Inappropriate I/O control operation
+#define ENXIO           62 // No such device or address
+#define EOPNOTSUPP      63 // Operation not supported on socket (may be the same value as [ENOTSUP])
+#define EOVERFLOW       64 // Value too large to be stored in data type
+#define EOWNERDEAD      65 // Previous owner died
+#define EPERM           66 // Operation not permitted
+#define EPIPE           67 // Broken pipe
+#define EPROTO          68 // Protocol error
+#define EPROTONOSUPPORT 69 // Protocol not supported
+#define EPROTOTYPE      70 // Protocol wrong type for socket
+#define ERANGE          71 // Result too large
+#define EROFS           72 // Read-only file system
+#define ESPIPE          73 // Invalid seek
+#define ESRCH           74 // No such process
+#define ESTALE          75 // Reserved
+#define ETIME           76 // [OB XSR] [Option Start] Stream ioctl() timeout. [Option End // [ETIMEDOUT // Connection timed out
+#define ETIMEDOUT       77 //
+#define ETXTBSY         78 // Text file busy
+#define EWOULDBLOCK     79 // Operation would block (may be the same value as [EAGAIN])
+#define EXDEV           80 // Cross-device link
 
 extern int errno;
 #define errno errno
