@@ -37,7 +37,7 @@ LIBK_OUT := libk.a crti.o crtn.o
 LIBK_SYS := $(addprefix $(LIB_PATH)/, $(LIBK_OUT))
 
 clean:
-	@rm -rf $(INC_PATH) $(LIB_PATH) $(ALL_OBJS) $(ALL_DEPS) libc.a libk.a
+	@rm -rf $(ALL_OBJS) $(ALL_DEPS) libc.a libk.a
 
 install-headers: | $(INC_PATH)
 	@cp -rfPT include $(INC_PATH)
