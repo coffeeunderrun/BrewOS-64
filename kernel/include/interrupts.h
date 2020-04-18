@@ -12,9 +12,9 @@ typedef void (*Callback)(Registers *regs);
 
 void Initialize(void);
 
-void AddCallback(int vector, Callback callback);
+void AddCallback(unsigned vector, Callback callback);
 
-void RemoveCallback(int vector, Callback callback);
+void RemoveCallback(unsigned vector, Callback callback);
 
 } // Interrupts
 } // BrewOS

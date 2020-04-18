@@ -2,6 +2,7 @@
 #define VECTOR_H
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 namespace BrewOS {
@@ -11,13 +12,13 @@ class Vector {
 private:
     T *m_data;
 
-    unsigned int m_limit;
+    unsigned m_lim;
 
-    unsigned int m_count;
+    unsigned m_cnt;
 
     bool Expand(void)
     {
-        unsigned int new_limit = m_limit * 2;
+        unsigned new_limit = m_lim * 2;
         T *data = (T *)realloc(m_data, sizeof(T) * new_limit);
         if(data == nullptr)
         {
@@ -26,28 +27,38 @@ private:
         }
 
         m_data = data;
-        m_limit = new_limit;
+        m_lim = new_limit;
+
+        for(unsigned i = m_cnt; i < m_lim; i++)
+        {
+            m_data[i] = T{};
+        }
 
         return true;
     }
 
     void Shrink(void)
     {
-        m_limit /= 2;
-        m_data = (T *)realloc(m_data, sizeof(T) * m_limit);
+        m_lim /= 2;
+        m_data = (T *)realloc(m_data, sizeof(T) * m_lim);
     }
 
 public:
-    Vector(unsigned int limit = 10)
+    Vector(unsigned lim = 10)
     {
-        if(limit == 0)
+        if(lim == 0)
         {
-            limit = 1;
+            lim = 1;
         }
 
-        m_data = new T[limit];
-        m_limit = limit;
-        m_count = 0;
+        m_data = new T[lim];
+        m_lim = lim;
+        m_cnt = 0;
+
+        for(unsigned i = 0; i < m_lim; i++)
+        {
+            m_data[i] = T{};
+        }
     }
 
     ~Vector(void)
@@ -57,105 +68,105 @@ public:
 
     void Push(T item)
     {
-        if(m_count == m_limit && !Expand())
+        if(m_cnt == m_lim && !Expand())
         {
             // Not enough memory
             return;
         }
 
-        m_data[m_count++] = item;
+        m_data[m_cnt++] = item;
     }
 
     T Pop(void)
     {
-        if(m_count == 0)
+        if(m_cnt == 0)
         {
             // No items left
             return 0;
         }
 
-        if(m_count == m_limit / 4)
+        if(m_cnt == m_lim / 4)
         {
             Shrink();
         }
 
-        return m_data[--m_count];
+        return m_data[--m_cnt];
     }
 
-    void Insert(T item, unsigned int index)
+    void Insert(T item, unsigned index)
     {
-        if(index >= m_count)
+        if(index >= m_cnt)
         {
             // Out of bounds
             return;
         }
 
-        if(m_count == m_limit && !Expand())
+        if(m_cnt == m_lim && !Expand())
         {
             // Not enough memory
             return;
         }
 
-        unsigned int move_size = (m_count - index) * sizeof(T);
+        unsigned move_size = (m_cnt - index) * sizeof(T);
         memmove(&m_data[index + 1], &m_data[index], move_size);
 
         m_data[index] = item;
-        m_count++;
+        m_cnt++;
     }
 
-    T Remove(unsigned int index)
+    T Remove(unsigned index)
     {
-        if(index >= m_count)
+        if(index >= m_cnt)
         {
             // Out of bounds
-            return;
+            return T{};
         }
 
-        if(m_count == m_limit / 4)
+        if(m_cnt == m_lim / 4)
         {
             Shrink();
         }
 
         T item = m_data[index];
 
-        unsigned int move_size = (m_count - index) * sizeof(T);
+        unsigned move_size = (m_cnt - index) * sizeof(T);
         memmove(&m_data[index], &m_data[index + 1], move_size);
 
-        m_count--;
+        m_cnt--;
 
         return item;
     }
 
-    void Set(T item, unsigned int index)
+    void Set(T item, unsigned index)
     {
-        if(index >= m_count)
+        if(index >= m_cnt)
         {
             // Out of bounds
-            return;
+            return T{};
         }
 
         m_data[index] = item;
     }
 
-    T Get(unsigned int index)
+    T Get(unsigned index)
     {
-        if(index >= m_count)
+        if(index >= m_cnt)
         {
             // Out of bounds
-            return;
+            return T{};
         }
 
         return m_data[index];
     }
 
-    unsigned int GetLimit(void)
+    unsigned GetLimit(void)
     {
-        return m_limit;
+        return m_lim;
     }
 
-    unsigned int GetCount(void)
+    unsigned GetCount(void)
     {
-        return m_count;
+        return m_cnt;
     }
 };
 
