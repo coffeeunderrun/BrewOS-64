@@ -169,6 +169,7 @@ trampoline:
     mov gs, ax
     mov ss, ax
 
+    ; TODO: Zero out BSS section
     ; Load ELF program segments into proper locations
     mov rax, [kb + 0x20]  ; Program header offset
     add rax, kb           ; Where kernel was originally loaded
