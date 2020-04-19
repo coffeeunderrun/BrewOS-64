@@ -4,15 +4,6 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-RTLD_LAZY
-Relocations are performed at an implementation-defined time.
-RTLD_NOW
-Relocations are performed when the object is loaded.
-RTLD_GLOBAL
-All symbols are available for relocation processing of other modules.
-RTLD_LOCAL
-All symbols are not made available for relocation processing by other modules.
-
 #define RTLD_LAZY         0x1 // Relocations are performed at an implementation-defined time
 #define RTLD_NOW          0x2 // Relocations are performed when the object is loaded
 #define RTLD_BINDING_MASK 0x3 // All symbols are available for relocation processing of other modules
