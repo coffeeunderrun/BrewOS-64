@@ -6,6 +6,7 @@
  */
 
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <interrupts.h>
 #include <memory.h>
@@ -92,7 +93,7 @@ static const uintptr_t kernel_start = (uintptr_t)&_kernel_start;
 static const uintptr_t kernel_data = (uintptr_t)&_kernel_data;
 static const uintptr_t kernel_end = (uintptr_t)&_kernel_end;
 
-void Initialize(void *mem_map)
+void Initialize(void *mmap)
 {
     kernel_page_table_end = (PageTable *)ALIGN(kernel_end);
 
@@ -148,7 +149,7 @@ void Initialize(void *mem_map)
     frame_stack = (uintptr_t *)ALIGN(kernel_end);
 
     // Initialize memory map pop frame function
-    mmap_entry = (MemMapEntry *)mem_map;
+    mmap_entry = (MemMapEntry *)mmap;
     mmap_addr = ALIGN(mmap_entry->base);
     mmap_size = mmap_entry->size;
 
@@ -162,11 +163,11 @@ void Initialize(void *mem_map)
     Interrupts::AddCallback(Interrupts::VECTOR_PF, PageFaultHandler);
 }
 
-err_t Allocate(void *addr, bool execute, bool write, bool user)
+err_t Allocate(void *addr, bool exec, bool write, bool user)
 {
     int flags = 0;
 
-    if(!execute)
+    if(!exec)
     {
         flags |= PAGE_NOEXECUTE;
     }

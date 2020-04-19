@@ -1,9 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
+#include <cstdlib>
+#include <cstring>
 
 namespace BrewOS {
 
