@@ -1,245 +1,367 @@
 #ifndef MATH_H
 #define MATH_H
 
-#include <stdint.h>
+#include <sys/cdefs.h>
+#include <sys/types.h>
 
-typedef double double_t;
-typedef float float_t;
+extern int signgam;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+__BEGIN_DECLS
 
-double acos(double);
-float acosf(float);
-long double acosl(long double);
+double acos(double x);
 
-double acosh(double);
-float acoshf(float);
-long double acoshl(long double);
+float acosf(float x);
 
-double asin(double);
-float asinf(float);
-long double asinl(long double);
+double acosh(double x);
 
-double asinh(double);
-float asinhf(float);
-long double asinhl(long double);
+float acoshf(float x);
 
-double atan(double);
-float atanf(float);
-long double atanl(long double);
+long double acoshl(long double x);
 
-double atan2(double, double);
-float atan2f(float, float);
-long double atan2l(long double, long double);
+long double acosl(long double x);
 
-double atanh(double);
-float atanhf(float);
-long double atanhl(long double);
+double asin(double x);
 
-double cbrt(double);
-float cbrtf(float);
-long double cbrtl(long double);
+float asinf(float x);
 
-double ceil(double);
-float ceilf(float);
-long double ceill(long double);
+double asinh(double x);
 
-double copysign(double, double);
-float copysignf(float, float);
-long double copysignl(long double, long double);
+float asinhf(float x);
 
-double cos(double);
-float cosf(float);
-long double cosl(long double);
+long double asinhl(long double x);
 
-double cosh(double);
-float coshf(float);
-long double coshl(long double);
+long double asinl(long double x);
 
-double erf(double);
-float erff(float);
-long double erfl(long double);
+double atan(double x);
 
-double erfc(double);
-float erfcf(float);
-long double erfcl(long double);
+double atan2(double y, double x);
 
-double exp(double);
-float expf(float);
-long double expl(long double);
+float atan2f(float y, float x);
 
-double exp2(double);
-float exp2f(float);
-long double exp2l(long double);
+long double atan2l(long double y, long double x);
 
-double expm1(double);
-float expm1f(float);
-long double expm1l(long double);
+float atanf(float x);
 
-double fabs(double);
-float fabsf(float);
-long double fabsl(long double);
+double atanh(double x);
 
-double fdim(double, double);
-float fdimf(float, float);
-long double fdiml(long double, long double);
+float atanhf(float x);
 
-double floor(double);
-float floorf(float);
-long double floorl(long double);
+long double atanhl(long double x);
 
-double fma(double, double, double);
-float fmaf(float, float, float);
-long double fmal(long double, long double, long double);
+long double atanl(long double x);
 
-double fmax(double, double);
-float fmaxf(float, float);
-long double fmaxl(long double, long double);
+double cbrt(double x);
 
-double fmin(double, double);
-float fminf(float, float);
-long double fminl(long double, long double);
+float cbrtf(float x);
 
-double fmod(double, double);
-float fmodf(float, float);
-long double fmodl(long double, long double);
+long double cbrtl(long double x);
 
-double frexp(double, int *);
-float frexpf(float, int *);
-long double frexpl(long double, int *);
+double ceil(double x);
 
-double hypot(double, double);
-float hypotf(float, float);
-long double hypotl(long double, long double);
+float ceilf(float x);
 
-int ilogb(double);
-int ilogbf(float);
-int ilogbl(long double);
+long double ceill(long double x);
 
-double ldexp(double, int);
-float ldexpf(float, int);
-long double ldexpl(long double, int);
+double copysign(double x, double y);
 
-double lgamma(double);
-float lgammaf(float);
-long double lgammal(long double);
+float copysignf(float x, float y);
 
-long long llrint(double);
-long long llrintf(float);
-long long llrintl(long double);
+long double copysignl(long double x, long double y);
 
-long long llround(double);
-long long llroundf(float);
-long long llroundl(long double);
+double cos(double x);
 
-double log(double);
-float logf(float);
-long double logl(long double);
+float cosf(float x);
 
-double log10(double);
-float log10f(float);
-long double log10l(long double);
+double cosh(double x);
 
-double log1p(double);
-float log1pf(float);
-long double log1pl(long double);
+float coshf(float x);
 
-double log2(double);
-float log2f(float);
-long double log2l(long double);
+long double coshl(long double x);
 
-double logb(double);
-float logbf(float);
-long double logbl(long double);
+long double cosl(long double x);
 
-long lrint(double);
-long lrintf(float);
-long lrintl(long double);
+double erf(double x);
 
-long lround(double);
-long lroundf(float);
-long lroundl(long double);
+double erfc(double x);
 
-double modf(double, double *);
-float modff(float, float *);
-long double modfl(long double, long double *);
+float erfcf(float x);
 
-double nan(const char *);
-float nanf(const char *);
-long double nanl(const char *);
+long double erfcl(long double x);
 
-double nearbyint(double);
-float nearbyintf(float);
-long double nearbyintl(long double);
+float erff(float x);
 
-double nextafter(double, double);
-float nextafterf(float, float);
-long double nextafterl(long double, long double);
+long double erfl(long double x);
 
-double nexttoward(double, long double);
-float nexttowardf(float, long double);
-long double nexttowardl(long double, long double);
+double exp(double x);
 
-double pow(double, double);
-float powf(float, float);
-long double powl(long double, long double);
+double exp2(double x);
 
-double remainder(double, double);
-float remainderf(float, float);
-long double remainderl(long double, long double);
+float exp2f(float x);
 
-double remquo(double, double, int *);
-float remquof(float, float, int *);
-long double remquol(long double, long double, int *);
+long double exp2l(long double x);
 
-double rint(double);
-float rintf(float);
-long double rintl(long double);
+float expf(float x);
 
-double round(double);
-float roundf(float);
-long double roundl(long double);
+long double expl(long double x);
 
-double scalbln(double, long);
-float scalblnf(float, long);
-long double scalblnl(long double, long);
+double expm1(double x);
 
-double scalbn(double, int);
-float scalbnf(float, int);
-long double scalbnl(long double, int);
+float expm1f(float x);
 
-double sin(double);
-float sinf(float);
-long double sinl(long double);
+long double expm1l(long double x);
 
-double sinh(double);
-float sinhf(float);
-long double sinhl(long double);
+double fabs(double x);
 
-double sqrt(double);
-float sqrtf(float);
-long double sqrtl(long double);
+float fabsf(float x);
 
-double tan(double);
-float tanf(float);
-long double tanl(long double);
+long double fabsl(long double x);
 
-double tanh(double);
-float tanhf(float);
-long double tanhl(long double);
+double fdim(double x, double y);
 
-double tgamma(double);
-float tgammaf(float);
-long double tgammal(long double);
+float fdimf(float x, float y);
 
-double trunc(double);
-float truncf(float);
-long double truncl(long double);
+long double fdiml(long double x, long double y);
 
-#ifdef __cplusplus
-}
-#endif
+double floor(double x);
+
+float floorf(float x);
+
+long double floorl(long double x);
+
+double fma(double x, double y, double z);
+
+float fmaf(float x, float y, float z);
+
+long double fmal(long double x, long double y, long double z);
+
+double fmax(double x, double y);
+
+float fmaxf(float x, float y);
+
+long double fmaxl(long double x, long double y);
+
+double fmin(double x, double y);
+
+float fminf(float x, float y);
+
+long double fminl(long double x, long double y);
+
+double fmod(double numer, double denom);
+
+float fmodf(float numer, float denom);
+
+long double fmodl(long double numer, long double denom);
+
+double frexp(double x, int *expnt);
+
+float frexpf(float x, int *expnt);
+
+long double frexpl(long double x, int *expnt);
+
+double hypot(double x, double y);
+
+float hypotf(float x, float y);
+
+long double hypotl(long double x, long double y);
+
+int ilogb(double x);
+
+int ilogbf(float x);
+
+int ilogbl(long double x);
+
+double j0(double x);
+
+double j1(double x);
+
+double jn(int n, double x);
+
+double ldexp(double x, int expnt);
+
+float ldexpf(float x, int expnt);
+
+long double ldexpl(long double x, int expnt);
+
+double lgamma(double x);
+
+float lgammaf(float x);
+
+long double lgammal(long double x);
+
+long long llrint(double x);
+
+long long llrintf(float x);
+
+long long llrintl(long double x);
+
+long long llround(double x);
+
+long long llroundf(float x);
+
+long long llroundl(long double x);
+
+double log(double x);
+
+double log10(double x);
+
+float log10f(float x);
+
+long double log10l(long double x);
+
+double log1p(double x);
+
+float log1pf(float x);
+
+long double log1pl(long double x);
+
+double log2(double x);
+
+float log2f(float x);
+
+long double log2l(long double x);
+
+double logb(double x);
+
+float logbf(float x);
+
+long double logbl(long double x);
+
+float logf(float x);
+
+long double logl(long double x);
+
+long lrint(double x);
+
+long lrintf(float x);
+
+long lrintl(long double x);
+
+long lround(double x);
+
+long lroundf(float x);
+
+long lroundl(long double x);
+
+double modf(double x, double *intgr);
+
+float modff(float x, float *intgr);
+
+long double modfl(long double x, long double *intgr);
+
+double nan(const char *tagp);
+
+float nanf(const char *tagp);
+
+long double nanl(const char *tagp);
+
+double nearbyint(double x);
+
+float nearbyintf(float x);
+
+long double nearbyintl(long double x);
+
+double nextafter(double x, double y);
+
+float nextafterf(float x, float y);
+
+long double nextafterl(long double x, long double y);
+
+double nexttoward(double x, long double y);
+
+float nexttowardf(float x, long double y);
+
+long double nexttowardl(long double x, long double y);
+
+double pow(double base, double expnt);
+
+float powf(float base, float expnt);
+
+long double powl(long double base, long double expnt);
+
+double remainder(double numer, double denom);
+
+float remainderf(float numer, float denom);
+
+long double remainderl(long double numer, long double denom);
+
+double remquo(double numer, double denom, int *quot);
+
+float remquof(float numer, float denom, int *quot);
+
+long double remquol(long double numer, long double denom, int *quot);
+
+double rint(double x);
+
+float rintf(float x);
+
+long double rintl(long double x);
+
+double round(double x);
+
+float roundf(float x);
+
+long double roundl(long double x);
+
+double scalbln(double x, long n);
+
+float scalblnf(float x, long n);
+
+long double scalblnl(long double x, long n);
+
+double scalbn(double x, int n);
+
+float scalbnf(float x, int n);
+
+long double scalbnl(long double x, int n);
+
+double sin(double x);
+
+float sinf(float x);
+
+double sinh(double x);
+
+float sinhf(float x);
+
+long double sinhl(long double x);
+
+long double sinl(long double x);
+
+double sqrt(double x);
+
+float sqrtf(float x);
+
+long double sqrtl(long double x);
+
+double tan(double x);
+
+float tanf(float x);
+
+double tanh(double x);
+
+float tanhf(float x);
+
+long double tanhl(long double x);
+
+long double tanl(long double x);
+
+double tgamma(double x);
+
+float tgammaf(float x);
+
+long double tgammal(long double x);
+
+double trunc(double x);
+
+float truncf(float x);
+
+long double truncl(long double x);
+
+double y0(double x);
+
+double y1(double x);
+
+double yn(int n, double x);
+
+__END_DECLS
 
 #endif // MATH_H

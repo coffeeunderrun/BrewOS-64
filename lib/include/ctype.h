@@ -1,40 +1,72 @@
 #ifndef CTYPE_H
 #define CTYPE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <locale.h>
+#include <sys/cdefs.h>
+#include <sys/types.h>
 
-int isalnum(int c);
+#define _tolower(chr) tolower(chr)
 
-int isalpha(int c);
+#define _toupper(chr) toupper(chr)
 
-int isblank(int c);
+__BEGIN_DECLS
 
-int iscntrl(int c);
+int isalnum(int chr);
 
-int isdigit(int c);
+int isalnum_l(int chr, locale_t locale);
 
-int isgraph(int c);
+int isalpha(int chr);
 
-int islower(int c);
+int isalpha_l(int chr, locale_t locale);
 
-int isprint(int c);
+int isblank(int chr);
 
-int ispunct(int c);
+int isblank_l(int chr, locale_t locale);
 
-int isspace(int c);
+int iscntrl(int chr);
 
-int isupper(int c);
+int iscntrl_l(int chr, locale_t locale);
 
-int isxdigit(int c);
+int isdigit(int chr);
 
-int tolower(int c);
+int isdigit_l(int chr, locale_t locale);
 
-int toupper(int c);
+int isgraph(int chr);
 
-#ifdef __cplusplus
-}
-#endif
+int isgraph_l(int chr, locale_t locale);
+
+int islower(int chr);
+
+int islower_l(int chr, locale_t locale);
+
+int isprint(int chr);
+
+int isprint_l(int chr, locale_t locale);
+
+int ispunct(int chr);
+
+int ispunct_l(int chr, locale_t locale);
+
+int isspace(int chr);
+
+int isspace_l(int chr, locale_t locale);
+
+int isupper(int chr);
+
+int isupper_l(int chr, locale_t locale);
+
+int isxdigit(int chr);
+
+int isxdigit_l(int chr, locale_t locale);
+
+int tolower(int chr);
+
+int tolower_l(int chr, locale_t locale);
+
+int toupper(int chr);
+
+int toupper_l(int chr, locale_t locale);
+
+__END_DECLS
 
 #endif // CTYPE_H

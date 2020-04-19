@@ -1,11 +1,11 @@
 #include <string.h>
 
-int memcmp(const void *a, const void *b, size_t cnt)
+int memcmp(const void *p1, const void *p2, size_t cnt)
 {
-    char *pa = (char *)a;
-    char *pb = (char *)b;
+    char *pp1 = (char *)p1;
+    char *pp2 = (char *)p2;
 
-    for( ; cnt && *pa++ == *pb++; cnt--);
+    for( ; cnt && *pp1++ == *pp2++; cnt--);
 
-    return *pa - *pb;
+    return *pp1 - *pp2;
 }
