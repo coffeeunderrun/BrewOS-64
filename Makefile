@@ -4,8 +4,8 @@ MACHINE ?= x86_64
 TARGET  ?= $(MACHINE)-$(OS)
 
 # SYSROOT
-INC_PATH := $(CURDIR)/sysroot/usr/include
-LIB_PATH := $(CURDIR)/sysroot/usr/lib
+INC_PATH := $(CURDIR)/sysroot/include
+LIB_PATH := $(CURDIR)/sysroot/lib
 
 # ASSEMBLER
 ifeq ($(MACHINE), x86_64)
