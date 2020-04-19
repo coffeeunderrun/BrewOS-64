@@ -20,6 +20,7 @@ SECTIONS
 
 	.bss ALIGN(4K) : AT(ADDR(.bss) - 0xFFFFFFFF80000000)
 	{
+		_kernel_bss = .;
 		*(COMMON)
 		*(.bss)
 		_heap_start = .;
@@ -27,6 +28,8 @@ SECTIONS
 		_heap_end = .;
 		_kernel_end = .;
 	}
+
+	_kernel_bss_size = SIZEOF(.bss);
 
 	/DISCARD/ :
 	{

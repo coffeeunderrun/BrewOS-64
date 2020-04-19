@@ -1,6 +1,6 @@
 bits 64
 
-extern init_fpu, KernelMain
+extern _kernel_bss, _kernel_bss_size, init_fpu, KernelMain
 
 section .text
 
@@ -21,16 +21,28 @@ trampoline:
     mov gs, ax
     mov ss, ax
 
+    ; Save pointer to memory map
+    mov rbp, rdi
+
+    ; Zero-out BSS section
+    xor rax, rax
+    mov rcx, qword _kernel_bss_size
+    mov rdi, qword _kernel_bss
+    rep stosb
+
     ; Set up new stack
     mov rsp, qword kernel_stack_top
 
     ; Initialize FPU
     call init_fpu
 
+    ; Restore pointer to memory map
+    mov rdi, rbp
+
     ; Jump to kernel
     jmp KernelMain
 
-section .bss
+section .data
 
 align 0x1000
 global gdt.kern_code, gdt.user_code
@@ -46,6 +58,8 @@ gdt:
              dq 0x0000F20000000000
 .ptr:        dw $ - gdt - 1
              dq gdt
+
+section .bss
 
 align 0x1000
 resb 0x2000

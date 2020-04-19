@@ -1,9 +1,9 @@
-#include <arch/x86_64/interrupts.h>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <interrupts.h>
 #include <vector.h>
+#include <arch/x86_64/interrupts.h>
 
 extern "C"
 {
@@ -21,9 +21,6 @@ static Vector<Callback> *callbacks[MAX_VECTORS];
 void Initialize(void)
 {
     init_interrupts();
-
-    // Don't trust ELF loader to zero out BSS section
-    memset(callbacks, 0, sizeof(void *) * MAX_VECTORS);
 }
 
 void AddCallback(unsigned vector, Callback callback)

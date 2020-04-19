@@ -5,12 +5,12 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
-#include <arch/x86_64/arch.h>
-#include <arch/x86_64/interrupts.h>
-#include <errno.h>
+#include <cerrno>
+#include <cstring>
 #include <interrupts.h>
 #include <memory.h>
-#include <string.h>
+#include <arch/x86_64/arch.h>
+#include <arch/x86_64/interrupts.h>
 
 extern const uintptr_t _kernel_start;
 extern const uintptr_t _kernel_data;
