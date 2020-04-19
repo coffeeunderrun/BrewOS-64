@@ -168,6 +168,16 @@ public:
     {
         return m_cnt;
     }
+
+    T *begin(void)
+    {
+        return &m_data[0];
+    }
+
+    T *end(void)
+    {
+        return (T *)(m_data + m_cnt);
+    }
 };
 
 } // BrewOS
