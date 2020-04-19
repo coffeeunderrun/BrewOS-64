@@ -3,6 +3,9 @@
 
 #include <sys/types.h>
 
+extern int errno;
+#define errno errno
+
 #define OK              0  // No error
 #define E2BIG           1  // Argument list too long
 #define EACCES          2  // Permission denied
@@ -84,8 +87,5 @@
 #define ETXTBSY         78 // Text file busy
 #define EWOULDBLOCK     79 // Operation would block (may be the same value as [EAGAIN])
 #define EXDEV           80 // Cross-device link
-
-extern int errno;
-#define errno errno
 
 #endif // ERRNO_H
