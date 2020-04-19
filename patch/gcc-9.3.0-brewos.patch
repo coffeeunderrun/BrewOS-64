@@ -1,0 +1,140 @@
+diff -crbBN gcc-9.3.0-org/config.sub gcc-9.3.0/config.sub
+*** gcc-9.3.0-org/config.sub	2020-03-12 07:07:20.000000000 -0400
+--- gcc-9.3.0/config.sub	2020-04-12 23:57:11.390336800 -0400
+***************
+*** 1363,1369 ****
+  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
+  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
+  	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+! 	     | midnightbsd* | amdhsa* | unleashed* | emscripten*)
+  	# Remember, each alternative MUST END IN *, to match a version number.
+  		;;
+  	qnx*)
+--- 1363,1369 ----
+  	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
+  	     | skyos* | haiku* | rdos* | toppers* | drops* | es* \
+  	     | onefs* | tirtos* | phoenix* | fuchsia* | redox* | bme* \
+! 	     | midnightbsd* | amdhsa* | unleashed* | emscripten* | brewos*)
+  	# Remember, each alternative MUST END IN *, to match a version number.
+  		;;
+  	qnx*)
+diff -crbBN gcc-9.3.0-org/fixincludes/mkfixinc.sh gcc-9.3.0/fixincludes/mkfixinc.sh
+*** gcc-9.3.0-org/fixincludes/mkfixinc.sh	2020-03-12 07:07:20.000000000 -0400
+--- gcc-9.3.0/fixincludes/mkfixinc.sh	2020-04-12 23:57:11.390336800 -0400
+***************
+*** 19,25 ****
+      powerpc-*-rtems*   | \
+      powerpcle-*-eabisim* | \
+      powerpcle-*-eabi* | \
+!     *-musl* )
+  	#  IF there is no include fixing,
+  	#  THEN create a no-op fixer and exit
+  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
+--- 19,26 ----
+      powerpc-*-rtems*   | \
+      powerpcle-*-eabisim* | \
+      powerpcle-*-eabi* | \
+!     *-musl* | \
+!     *-brewos*)
+  	#  IF there is no include fixing,
+  	#  THEN create a no-op fixer and exit
+  	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
+diff -crbBN gcc-9.3.0-org/gcc/config/brewos.h gcc-9.3.0/gcc/config/brewos.h
+*** gcc-9.3.0-org/gcc/config/brewos.h	1969-12-31 19:00:00.000000000 -0500
+--- gcc-9.3.0/gcc/config/brewos.h	2020-04-12 23:57:11.390336800 -0400
+***************
+*** 0 ****
+--- 1,21 ----
++ #undef  TARGET_BREWOS
++ #define TARGET_BREWOS 1
++
++ #undef  LIB_SPEC
++ #define LIB_SPEC "-lc"
++
++ #undef  STARTFILE_SPEC
++ #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
++
++ #undef  ENDFILE_SPEC
++ #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
++
++ #undef  TARGET_OS_CPP_BUILTINS
++ #define TARGET_OS_CPP_BUILTINS()          \
++     do {                                  \
++         builtin_define_std ("brewos");    \
++         builtin_define_std ("unix");      \
++         builtin_assert ("system=brewos"); \
++         builtin_assert ("system=unix");   \
++         builtin_assert ("system=posix");  \
++     } while(0);
+diff -crbBN gcc-9.3.0-org/gcc/config.gcc gcc-9.3.0/gcc/config.gcc
+*** gcc-9.3.0-org/gcc/config.gcc	2020-03-12 07:07:21.000000000 -0400
+--- gcc-9.3.0/gcc/config.gcc	2020-04-13 00:00:21.948243700 -0400
+***************
+*** 675,680 ****
+--- 675,686 ----
+
+  # Common parts for widely ported systems.
+  case ${target} in
++ *-*-brewos*)
++   gas=yes
++   gnu_ld=yes
++   default_use_cxa_atexit=yes
++   use_gcc_stdint=wrap
++   ;;
+  *-*-darwin*)
+    tmake_file="t-darwin "
+    tm_file="${tm_file} darwin.h"
+***************
+*** 1277,1282 ****
+--- 1283,1294 ----
+  	use_collect2=no
+  	use_gcc_stdint=wrap
+  	;;
++ i[34567]86-*-brewos*)
++ 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h glibc-stdint.h brewos.h"
++ 	;;
++ x86_64-*-brewos*)
++ 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/x86-64.h glibc-stdint.h brewos.h"
++ 	;;
+  cr16-*-elf)
+          tm_file="elfos.h ${tm_file} newlib-stdint.h"
+          tmake_file="${tmake_file} cr16/t-cr16 "
+diff -crbBN gcc-9.3.0-org/libgcc/config.host gcc-9.3.0/libgcc/config.host
+*** gcc-9.3.0-org/libgcc/config.host	2020-03-12 07:07:23.000000000 -0400
+--- gcc-9.3.0/libgcc/config.host	2020-04-13 00:00:21.948243700 -0400
+***************
+*** 508,513 ****
+--- 508,521 ----
+  	tmake_file="$tmake_file bfin/t-bfin t-fdpbit"
+  	extra_parts="crtbegin.o crtend.o crti.o crtn.o"
+          ;;
++ i[34567]86-*-brewos*)
++ 	extra_parts="$extra_parts crtbegin.o crtend.o"
++ 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
++ 	;;
++ x86_64-*-brewos*)
++ 	extra_parts="$extra_parts crtbegin.o crtend.o"
++ 	tmake_file="$tmake_file i386/t-crtstuff t-crtstuff-pic t-libgcc-pic"
++ 	;;
+  cr16-*-elf)
+  	tmake_file="${tmake_file} cr16/t-cr16 cr16/t-crtlibid t-fdpbit"
+  	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
+diff -crbBN gcc-9.3.0-org/libstdc++-v3/crossconfig.m4 gcc-9.3.0/libstdc++-v3/crossconfig.m4
+*** gcc-9.3.0-org/libstdc++-v3/crossconfig.m4	2020-03-12 07:07:24.000000000 -0400
+--- gcc-9.3.0/libstdc++-v3/crossconfig.m4	2020-04-13 00:00:21.948243700 -0400
+***************
+*** 35,40 ****
+--- 35,47 ----
+      AC_DEFINE(HAVE_TANHF)
+      ;;
+
++   *-brewos*)
++     GLIBCXX_CHECK_COMPILER_FEATURES
++     GLIBCXX_CHECK_LINKER_FEATURES
++     GLIBCXX_CHECK_MATH_SUPPORT
++     GLIBCXX_CHECK_STDLIB_SUPPORT
++     ;;
++
+    mips*-sde-elf*)
+      # These definitions are for the SDE C library rather than newlib.
+      SECTION_FLAGS='-ffunction-sections -fdata-sections'
