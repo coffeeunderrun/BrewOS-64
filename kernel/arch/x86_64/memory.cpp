@@ -8,10 +8,10 @@
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
-#include <interrupts.h>
-#include <memory.h>
-#include <arch/x86_64/arch.h>
-#include <arch/x86_64/interrupts.h>
+#include <interrupts.hpp>
+#include <memory.hpp>
+#include <arch/x86_64/arch.hpp>
+#include <arch/x86_64/interrupts.hpp>
 
 extern const uintptr_t _kernel_start;
 extern const uintptr_t _kernel_data;

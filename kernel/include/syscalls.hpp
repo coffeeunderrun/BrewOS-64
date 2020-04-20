@@ -1,5 +1,5 @@
-#ifndef SYSCALLS_H
-#define SYSCALLS_H
+#ifndef KERNEL_SYSCALLS
+#define KERNEL_SYSCALLS
 
 namespace BrewOS {
 namespace Syscalls {
@@ -9,4 +9,4 @@ void Initialize(void);
 } // Syscalls
 } // BrewOS
 
-#endif // SYSCALLS_H
+#endif // KERNEL_SYSCALLS

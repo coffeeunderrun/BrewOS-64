@@ -1,4 +1,4 @@
-#include "syscalls.h"
+#include "syscalls.hpp"
 
 extern "C"
 void init_syscalls(void);

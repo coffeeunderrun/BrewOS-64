@@ -1,9 +1,9 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
-#include <interrupts.h>
-#include <vector.h>
-#include <arch/x86_64/interrupts.h>
+#include <interrupts.hpp>
+#include <vector.hpp>
+#include <arch/x86_64/interrupts.hpp>
 
 extern "C"
 {

@@ -1,5 +1,5 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef KERNEL_VECTOR
+#define KERNEL_VECTOR
 
 #include <cstdlib>
 #include <cstring>
@@ -181,4 +181,4 @@ public:
 
 } // BrewOS
 
-#endif // VECTOR_H
+#endif // KERNEL_VECTOR

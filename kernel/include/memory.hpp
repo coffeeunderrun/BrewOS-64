@@ -1,5 +1,5 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef KERNEL_MEMORY
+#define KERNEL_MEMORY
 
 #include <cerrno>
 
@@ -15,4 +15,4 @@ err_t Free(void *addr);
 } // Memory
 } // BrewOS
 
-#endif // MEMORY_H
+#endif // KERNEL_MEMORY

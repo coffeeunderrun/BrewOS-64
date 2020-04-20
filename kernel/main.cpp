@@ -1,6 +1,6 @@
-#include <interrupts.h>
-#include <memory.h>
-#include <syscalls.h>
+#include <interrupts.hpp>
+#include <memory.hpp>
+#include <syscalls.hpp>
 
 extern "C"
 void _init();

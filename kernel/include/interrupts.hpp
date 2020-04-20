@@ -1,5 +1,5 @@
-#ifndef INTERRUPTS_H
-#define INTERRUPTS_H
+#ifndef KERNEL_INTERRUPTS
+#define KERNEL_INTERRUPTS
 
 namespace BrewOS {
 namespace Interrupts {
@@ -17,4 +17,4 @@ void RemoveCallback(unsigned vector, Callback callback);
 } // Interrupts
 } // BrewOS
 
-#endif // INTERRUPTS_H
+#endif // KERNEL_INTERRUPTS
