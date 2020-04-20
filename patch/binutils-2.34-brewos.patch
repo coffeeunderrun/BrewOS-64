@@ -59,7 +59,7 @@ diff -crbBN binutils-2.34-org/gas/configure.tgt binutils-2.34/gas/configure.tgt
     i386-*-fuchsia*)			fmt=elf ;;
 diff -crbBN binutils-2.34-org/ld/configure.tgt binutils-2.34/ld/configure.tgt
 *** binutils-2.34-org/ld/configure.tgt	2020-01-18 08:55:48.000000000 -0500
---- binutils-2.34/ld/configure.tgt	2020-04-13 06:12:37.336976600 -0400
+--- binutils-2.34/ld/configure.tgt	2020-04-18 23:43:32.072851300 -0400
 ***************
 *** 314,319 ****
 --- 314,324 ----
@@ -87,6 +87,19 @@ diff -crbBN binutils-2.34-org/ld/configure.tgt binutils-2.34/ld/configure.tgt
   x86_64-*-cloudabi*)	targ_emul=elf_x86_64_cloudabi
   			;;
   x86_64-*-linux-gnux32)	targ_emul=elf32_x86_64
+***************
+*** 1035,1040 ****
+--- 1044,1053 ----
+  NATIVE_LIB_DIRS='/usr/local/lib /lib /usr/lib'
+  case "${target}" in
+
++ *-*-brewos*)
++   NATIVE_LIB_DIRS='/lib'
++   ;;
++ 
+  *-*-dragonfly*)
+    NATIVE_LIB_DIRS='/lib /usr/lib /usr/pkg/lib /usr/local/lib'
+    ;;
 diff -crbBN binutils-2.34-org/ld/emulparams/elf_i386_brewos.sh binutils-2.34/ld/emulparams/elf_i386_brewos.sh
 *** binutils-2.34-org/ld/emulparams/elf_i386_brewos.sh	1969-12-31 19:00:00.000000000 -0500
 --- binutils-2.34/ld/emulparams/elf_i386_brewos.sh	2020-04-13 06:14:43.044269000 -0400

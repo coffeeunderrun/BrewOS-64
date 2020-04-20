@@ -1,6 +1,6 @@
 diff -crbBN gcc-9.3.0-org/config.sub gcc-9.3.0/config.sub
 *** gcc-9.3.0-org/config.sub	2020-03-12 07:07:20.000000000 -0400
---- gcc-9.3.0/config.sub	2020-04-12 23:57:11.390336800 -0400
+--- gcc-9.3.0/config.sub	2020-04-13 05:44:08.151466900 -0400
 ***************
 *** 1363,1369 ****
   	     | powermax* | dnix* | nx6 | nx7 | sei* | dragonfly* \
@@ -20,7 +20,7 @@ diff -crbBN gcc-9.3.0-org/config.sub gcc-9.3.0/config.sub
   	qnx*)
 diff -crbBN gcc-9.3.0-org/fixincludes/mkfixinc.sh gcc-9.3.0/fixincludes/mkfixinc.sh
 *** gcc-9.3.0-org/fixincludes/mkfixinc.sh	2020-03-12 07:07:20.000000000 -0400
---- gcc-9.3.0/fixincludes/mkfixinc.sh	2020-04-12 23:57:11.390336800 -0400
+--- gcc-9.3.0/fixincludes/mkfixinc.sh	2020-04-13 05:44:08.163421200 -0400
 ***************
 *** 19,25 ****
       powerpc-*-rtems*   | \
@@ -41,22 +41,25 @@ diff -crbBN gcc-9.3.0-org/fixincludes/mkfixinc.sh gcc-9.3.0/fixincludes/mkfixinc
   	(echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
 diff -crbBN gcc-9.3.0-org/gcc/config/brewos.h gcc-9.3.0/gcc/config/brewos.h
 *** gcc-9.3.0-org/gcc/config/brewos.h	1969-12-31 19:00:00.000000000 -0500
---- gcc-9.3.0/gcc/config/brewos.h	2020-04-12 23:57:11.390336800 -0400
+--- gcc-9.3.0/gcc/config/brewos.h	2020-04-18 23:50:02.050601200 -0400
 ***************
 *** 0 ****
---- 1,21 ----
+--- 1,24 ----
 + #undef  TARGET_BREWOS
 + #define TARGET_BREWOS 1
-+
++ 
 + #undef  LIB_SPEC
 + #define LIB_SPEC "-lc"
-+
++ 
 + #undef  STARTFILE_SPEC
 + #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
-+
++ 
 + #undef  ENDFILE_SPEC
 + #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
-+
++ 
++ #undef  STANDARD_STARTFILE_PREFIX
++ #define	STANDARD_STARTFILE_PREFIX "/lib/"
++ 
 + #undef  TARGET_OS_CPP_BUILTINS
 + #define TARGET_OS_CPP_BUILTINS()          \
 +     do {                                  \
@@ -68,11 +71,11 @@ diff -crbBN gcc-9.3.0-org/gcc/config/brewos.h gcc-9.3.0/gcc/config/brewos.h
 +     } while(0);
 diff -crbBN gcc-9.3.0-org/gcc/config.gcc gcc-9.3.0/gcc/config.gcc
 *** gcc-9.3.0-org/gcc/config.gcc	2020-03-12 07:07:21.000000000 -0400
---- gcc-9.3.0/gcc/config.gcc	2020-04-13 00:00:21.948243700 -0400
+--- gcc-9.3.0/gcc/config.gcc	2020-04-18 23:42:02.130026100 -0400
 ***************
 *** 675,680 ****
---- 675,686 ----
-
+--- 675,687 ----
+  
   # Common parts for widely ported systems.
   case ${target} in
 + *-*-brewos*)
@@ -80,13 +83,14 @@ diff -crbBN gcc-9.3.0-org/gcc/config.gcc gcc-9.3.0/gcc/config.gcc
 +   gnu_ld=yes
 +   default_use_cxa_atexit=yes
 +   use_gcc_stdint=wrap
++   native_system_header_dir=/include
 +   ;;
   *-*-darwin*)
     tmake_file="t-darwin "
     tm_file="${tm_file} darwin.h"
 ***************
 *** 1277,1282 ****
---- 1283,1294 ----
+--- 1284,1295 ----
   	use_collect2=no
   	use_gcc_stdint=wrap
   	;;
@@ -101,7 +105,7 @@ diff -crbBN gcc-9.3.0-org/gcc/config.gcc gcc-9.3.0/gcc/config.gcc
           tmake_file="${tmake_file} cr16/t-cr16 "
 diff -crbBN gcc-9.3.0-org/libgcc/config.host gcc-9.3.0/libgcc/config.host
 *** gcc-9.3.0-org/libgcc/config.host	2020-03-12 07:07:23.000000000 -0400
---- gcc-9.3.0/libgcc/config.host	2020-04-13 00:00:21.948243700 -0400
+--- gcc-9.3.0/libgcc/config.host	2020-04-13 05:44:08.179418300 -0400
 ***************
 *** 508,513 ****
 --- 508,521 ----
@@ -121,20 +125,20 @@ diff -crbBN gcc-9.3.0-org/libgcc/config.host gcc-9.3.0/libgcc/config.host
   	extra_parts="$extra_parts crti.o crtn.o crtlibid.o"
 diff -crbBN gcc-9.3.0-org/libstdc++-v3/crossconfig.m4 gcc-9.3.0/libstdc++-v3/crossconfig.m4
 *** gcc-9.3.0-org/libstdc++-v3/crossconfig.m4	2020-03-12 07:07:24.000000000 -0400
---- gcc-9.3.0/libstdc++-v3/crossconfig.m4	2020-04-13 00:00:21.948243700 -0400
+--- gcc-9.3.0/libstdc++-v3/crossconfig.m4	2020-04-13 05:44:08.185247200 -0400
 ***************
 *** 35,40 ****
 --- 35,47 ----
       AC_DEFINE(HAVE_TANHF)
       ;;
-
+  
 +   *-brewos*)
 +     GLIBCXX_CHECK_COMPILER_FEATURES
 +     GLIBCXX_CHECK_LINKER_FEATURES
 +     GLIBCXX_CHECK_MATH_SUPPORT
 +     GLIBCXX_CHECK_STDLIB_SUPPORT
 +     ;;
-+
++ 
     mips*-sde-elf*)
       # These definitions are for the SDE C library rather than newlib.
       SECTION_FLAGS='-ffunction-sections -fdata-sections'

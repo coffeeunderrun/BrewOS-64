@@ -1,14 +1,14 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <sys/types.h>
+#include <cerrno>
 
 namespace BrewOS {
 namespace Memory {
 
-void Initialize(void *mem_map);
+void Initialize(void *mmap);
 
-err_t Allocate(void *addr, bool execute, bool write, bool user);
+err_t Allocate(void *addr, bool exec, bool write, bool user);
 
 err_t Free(void *addr);
 

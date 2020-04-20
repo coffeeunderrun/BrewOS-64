@@ -23,11 +23,11 @@
 #define F_UNLCK 1 // Unlock.
 #define F_WRLCK 2 // Exclusive or write lock.
 
-#define	O_ACCMODE  (O_RDONLY | O_WRONLY | O_RDWR)
+#define O_ACCMODE  (O_RDONLY | O_WRONLY | O_RDWR)
 
-#define	O_RDONLY    0x0     // Open read-only
-#define	O_WRONLY    0x1     // Open write-only
-#define	O_RDWR      0x2     // Open for reading and writing
+#define O_RDONLY    0x0     // Open read-only
+#define O_WRONLY    0x1     // Open write-only
+#define O_RDWR      0x2     // Open for reading and writing
 #define O_EXEC      0x4     // Open for execute only
 #define O_SEARCH    0x8     // Open directory for search only
 #define O_APPEND    0x10    // Set append mode
@@ -36,12 +36,12 @@
 #define O_RSYNC     0x80    // Synchronized read I/O operations
 #define O_SYNC      0x100   // Write according to synchronized I/O file integrity completion
 #define O_CLOEXEC   0x200   // Close file descriptor on exec
-#define	O_CREAT     0x400   // Create file if it doesn't exist
+#define O_CREAT     0x400   // Create file if it doesn't exist
 #define O_DIRECTORY 0x800   // Fail if file is a non-directory file
-#define	O_EXCL      0x1000  // Fail if file already exists
+#define O_EXCL      0x1000  // Fail if file already exists
 #define O_NOCTTY    0x2000  // Do not assign controlling terminal
 #define O_NOFOLLOW  0x4000  // Do not follow symbolic links
-#define	O_TRUNC     0x8000  // Truncate file to zero length
+#define O_TRUNC     0x8000  // Truncate file to zero length
 #define O_TTY_INIT  0x10000 // Set terminal parameters to conforming behavior
 
 #define AT_EACCESS           0x1 // Check access using effective user and group ID

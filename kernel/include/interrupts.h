@@ -1,8 +1,6 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
-#include <sys/types.h>
-
 namespace BrewOS {
 namespace Interrupts {
 
