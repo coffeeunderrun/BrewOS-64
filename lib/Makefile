@@ -36,6 +36,8 @@ LIBC_SYS := $(addprefix $(LIB_PATH)/, $(LIBC_OUT))
 LIBK_OUT := libk.a crti.o crtn.o
 LIBK_SYS := $(addprefix $(LIB_PATH)/, $(LIBK_OUT))
 
+vpath %.s arch/$(MACHINE)
+
 clean:
 	@rm -rf $(ALL_OBJS) $(ALL_DEPS) libc.a libk.a
 
@@ -56,7 +58,11 @@ libc.a: $(LIBC_OBJS)
 libk.a: $(LIBK_OBJS)
 	$(AR) -rcs $@ $^
 
-%.o: arch/$(MACHINE)/%.s
+%.o: %.s
+	$(AS) $(AS_FLAGS) -M $< > $(@:.o=.d)
+	$(AS) $(AS_FLAGS) -o$@ $<
+
+%.s.libc.o: %.s
 	$(AS) $(AS_FLAGS) -M $< > $(@:.o=.d)
 	$(AS) $(AS_FLAGS) -o$@ $<
 
@@ -65,6 +71,10 @@ libk.a: $(LIBK_OBJS)
 
 %.cpp.libc.o: %.cpp
 	$(CXX) $(CXX_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBC) -MMD -c -o$@ $<
+
+%.s.libk.o: %.s
+	$(AS) $(AS_FLAGS) -M $< > $(@:.o=.d)
+	$(AS) $(AS_FLAGS) -o$@ $<
 
 %.c.libk.o: %.c
 	$(CC) $(CC_FLAGS) $(C_FLAGS) $(C_FLAGS_LIBK) -MMD -c -o$@ $<
