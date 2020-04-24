@@ -41,9 +41,9 @@ struct lconv
 
 __BEGIN_DECLS
 
-struct lconv* localeconv();
+struct lconv *localeconv();
 
-char* setlocale(int category, const char* locale);
+char *setlocale(int category, const char *locale);
 
 __END_DECLS
 
