@@ -6,7 +6,7 @@
 
 __BEGIN_DECLS
 
-void* memchr(const void *ptr, int chr, size_t cnt);
+void *memchr(const void *ptr, int chr, size_t cnt);
 
 int memcmp(const void *p1, const void *p2, size_t cnt);
 
@@ -28,25 +28,25 @@ char *strcpy(char *dst, const char *src);
 
 size_t strcspn(const char *s1, const char *s2);
 
-char* strerror(int err);
+char *strerror(int err);
 
 size_t strlen(const char *str);
 
-char* strncat(char* dst, const char *src, size_t cnt);
+char *strncat(char *dst, const char *src, size_t cnt);
 
 int strncmp(const char *s1, const char *s2, size_t cnt);
 
-char* strncpy(char *dst, const char *src, size_t cnt);
+char *strncpy(char *dst, const char *src, size_t cnt);
 
-char* strpbrk(const char *s1, const char* s2);
+char *strpbrk(const char *s1, const char *s2);
 
-char* strrchr(const char *str, int chr);
+char *strrchr(const char *str, int chr);
 
 size_t strspn(const char *s1, const char *s2);
 
-char* strstr(const char *s1, const char *s2);
+char *strstr(const char *s1, const char *s2);
 
-char* strtok(char *dst, const char *src);
+char *strtok(char *dst, const char *src);
 
 size_t strxfrm(char *dst, const char *src, size_t cnt);
 

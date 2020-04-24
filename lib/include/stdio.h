@@ -113,7 +113,7 @@ int sscanf(const char *str, const char *fmt, ...);
 
 FILE *tmpfile(void);
 
-int ungetc(int chr, FILE* file);
+int ungetc(int chr, FILE *file);
 
 int vfprintf(FILE *file, const char *fmt, va_list arg);
 
