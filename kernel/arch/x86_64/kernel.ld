@@ -23,13 +23,15 @@ SECTIONS
 		_kernel_bss = .;
 		*(COMMON)
 		*(.bss)
-		_heap_start = .;
-		. += 0x8000;
-		_heap_end = .;
-		_kernel_end = .;
 	}
 
 	_kernel_bss_size = SIZEOF(.bss);
+
+	_heap_start = .;
+	. += 0x800000;
+	_heap_end = .;
+
+	_kernel_end = .;
 
 	/DISCARD/ :
 	{
