@@ -32,7 +32,7 @@ void AddCallback(unsigned vector, Callback callback)
 
     if(callbacks[vector] == nullptr)
     {
-        callbacks[vector] = new Vector<Callback>(1);
+        callbacks[vector] = new Vector<Callback>();
     }
 
     callbacks[vector]->Push(callback);
@@ -45,7 +45,7 @@ void RemoveCallback(unsigned vector, Callback callback)
         return;
     }
 
-    for(unsigned i = 0; callbacks[vector] && i < callbacks[vector]->GetCount(); )
+    for(unsigned i = 0; callbacks[vector] && i < callbacks[vector]->Count(); )
     {
         if(callbacks[vector]->Get(i) != callback)
         {
@@ -60,15 +60,12 @@ void RemoveCallback(unsigned vector, Callback callback)
 extern "C"
 void InterruptHandler(Registers *regs)
 {
-    if(regs->vector >= MAX_VECTORS)
-    {
-        // PANIC
-        return;
-    }
+    assert(callbacks != nullptr);
+    assert(regs->vector < MAX_VECTORS);
 
-    for(unsigned i = 0; callbacks[regs->vector] && i < callbacks[regs->vector]->GetCount(); )
+    for(auto callback : *callbacks[regs->vector])
     {
-        callbacks[regs->vector]->Get(i)(regs);
+        callback(regs);
     }
 
     clear_irq(regs->vector);

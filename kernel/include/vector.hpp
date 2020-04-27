@@ -1,60 +1,33 @@
 #ifndef KERNEL_VECTOR
 #define KERNEL_VECTOR
 
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <types.hpp>
 
 namespace BrewOS {
 
 template <class T>
 class Vector {
 private:
-    T *m_data;
+    T *m_data = nullptr;
 
-    unsigned m_lim;
-
-    unsigned m_cnt;
-
-    bool Expand(void)
-    {
-        unsigned new_limit = m_lim * 2;
-        T *data = (T *)realloc(m_data, sizeof(T) * new_limit);
-        if(data == nullptr)
-        {
-            // Not enough memory
-            return false;
-        }
-
-        m_data = data;
-        m_lim = new_limit;
-
-        for(unsigned i = m_cnt; i < m_lim; i++)
-        {
-            m_data[i] = T{};
-        }
-
-        return true;
-    }
-
-    void Shrink(void)
-    {
-        m_lim /= 2;
-        m_data = (T *)realloc(m_data, sizeof(T) * m_lim);
-    }
+    size_t m_cap = 0;
+    size_t m_cnt = 0;
 
 public:
-    Vector(unsigned lim = 10)
+    Vector(size_t cap = 1) : m_cap(MAX(cap, 1))
     {
-        if(lim == 0)
+        m_data = (T *)malloc((m_cap) * sizeof(T));
+
+        if(m_data == nullptr)
         {
-            lim = 1;
+            // PANIC
+            return;
         }
 
-        m_data = new T[lim];
-        m_lim = lim;
-        m_cnt = 0;
-
-        for(unsigned i = 0; i < m_lim; i++)
+        for(size_t i = 0; i < m_cap; i++)
         {
             m_data[i] = T{};
         }
@@ -62,12 +35,12 @@ public:
 
     ~Vector(void)
     {
-        delete m_data;
+        free(m_data);
     }
 
     void Push(T item)
     {
-        if(m_cnt == m_lim && !Expand())
+        if(m_cnt == m_cap && !Expand())
         {
             // Not enough memory
             return;
@@ -84,7 +57,7 @@ public:
             return 0;
         }
 
-        if(m_cnt == m_lim / 4)
+        if(m_cnt <= m_cap / 4)
         {
             Shrink();
         }
@@ -92,7 +65,7 @@ public:
         return m_data[--m_cnt];
     }
 
-    void Insert(T item, unsigned index)
+    void Insert(T item, size_t index)
     {
         if(index >= m_cnt)
         {
@@ -100,20 +73,20 @@ public:
             return;
         }
 
-        if(m_cnt == m_lim && !Expand())
+        if(m_cnt == m_cap && !Expand())
         {
             // Not enough memory
             return;
         }
 
-        unsigned move_size = (m_cnt - index) * sizeof(T);
+        size_t move_size = (m_cnt - index) * sizeof(T);
         memmove(&m_data[index + 1], &m_data[index], move_size);
 
         m_data[index] = item;
         m_cnt++;
     }
 
-    T Remove(unsigned index)
+    T Remove(size_t index)
     {
         if(index >= m_cnt)
         {
@@ -121,14 +94,14 @@ public:
             return T{};
         }
 
-        if(m_cnt == m_lim / 4)
+        if(m_cnt <= m_cap / 4)
         {
             Shrink();
         }
 
         T item = m_data[index];
 
-        unsigned move_size = (m_cnt - index) * sizeof(T);
+        size_t move_size = (m_cnt - index) * sizeof(T);
         memmove(&m_data[index], &m_data[index + 1], move_size);
 
         m_cnt--;
@@ -136,7 +109,7 @@ public:
         return item;
     }
 
-    void Set(T item, unsigned index)
+    void Set(T item, size_t index)
     {
         if(index >= m_cnt)
         {
@@ -147,7 +120,7 @@ public:
         m_data[index] = item;
     }
 
-    T Get(unsigned index)
+    T Get(size_t index)
     {
         if(index >= m_cnt)
         {
@@ -158,12 +131,12 @@ public:
         return m_data[index];
     }
 
-    unsigned GetLimit(void)
+    unsigned Capacity(void)
     {
-        return m_lim;
+        return m_cap;
     }
 
-    unsigned GetCount(void)
+    unsigned Count(void)
     {
         return m_cnt;
     }
@@ -176,6 +149,38 @@ public:
     T *end(void)
     {
         return (T *)(m_data + m_cnt);
+    }
+
+private:
+    bool Expand(void)
+    {
+        size_t new_cap = m_cap * 2;
+
+        T *data = (T *)realloc(m_data, sizeof(T) * new_cap);
+
+        if(data == nullptr)
+        {
+            // Not enough memory
+            return false;
+        }
+
+        m_data = data;
+        m_cap = new_cap;
+
+        for(size_t i = m_cnt; i < m_cap; i++)
+        {
+            m_data[i] = T{};
+        }
+
+        return true;
+    }
+
+    void Shrink(void)
+    {
+        m_cap = m_cap / 2;
+        m_data = (T *)realloc(m_data, sizeof(T) * m_cap);
+
+        assert(m_data != nullptr);
     }
 };
 
