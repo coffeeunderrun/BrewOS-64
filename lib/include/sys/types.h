@@ -26,7 +26,7 @@ typedef int gid_t;
 
 typedef uint32_t ino_t;
 
-typedef char *locale_t;
+typedef char* locale_t;
 
 typedef uint32_t mode_t;
 
@@ -42,7 +42,7 @@ typedef long suseconds_t;
 
 typedef long time_t;
 
-typedef void *timer_t;
+typedef void* timer_t;
 
 typedef int uid_t;
 

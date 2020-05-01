@@ -10,9 +10,11 @@ typedef void (*sig_handler_t)(int);
 
 __BEGIN_DECLS
 
-int raise(int sig);
+int
+raise(int sig);
 
-sig_handler_t signal(int sig, sig_handler_t handler);
+sig_handler_t
+signal(int sig, sig_handler_t handler);
 
 __END_DECLS
 #endif // SIGNAL_H

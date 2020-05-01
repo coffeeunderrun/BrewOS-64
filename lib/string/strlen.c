@@ -1,10 +1,12 @@
 #include <string.h>
 
-size_t strlen(const char *str)
+size_t
+strlen(const char* str)
 {
-    const char *p = str;
+    const char* p = str;
 
-    while(*p++);
+    while(*p++)
+        ;
 
     return p - str - 1;
 }

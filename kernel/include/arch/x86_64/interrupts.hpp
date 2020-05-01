@@ -1,6 +1,8 @@
 #ifndef X86_64_INTERRUPTS_H
 #define X86_64_INTERRUPTS_H
 
+#include <cstdint>
+
 namespace BrewOS {
 namespace Interrupts {
 

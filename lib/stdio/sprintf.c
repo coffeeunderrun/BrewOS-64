@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-int snprintf(char *str, size_t size, const char *fmt, ...)
+int
+snprintf(char* str, size_t size, const char* fmt, ...)
 {
     va_list arg;
     va_start(arg, fmt);
@@ -12,7 +13,8 @@ int snprintf(char *str, size_t size, const char *fmt, ...)
     return result;
 }
 
-int sprintf(char *str, const char *fmt, ...)
+int
+sprintf(char* str, const char* fmt, ...)
 {
     va_list arg;
     va_start(arg, fmt);
@@ -24,12 +26,14 @@ int sprintf(char *str, const char *fmt, ...)
     return result;
 }
 
-int vsnprintf(char *str, size_t size, const char *fmt, va_list arg)
+int
+vsnprintf(char* str, size_t size, const char* fmt, va_list arg)
 {
     return 0;
 }
 
-int vsprintf(char *str, const char *fmt, va_list arg)
+int
+vsprintf(char* str, const char* fmt, va_list arg)
 {
     return 0;
 }

@@ -7,27 +7,24 @@
 
 #define CLOCKS_PER_SEC ((__clock_t)1000000)
 
-#define CLOCK_REALTIME           0 // System-wide real time clock
-#define CLOCK_MONOTONIC          1 // System-wide monotonic clock
+#define CLOCK_REALTIME 0           // System-wide real time clock
+#define CLOCK_MONOTONIC 1          // System-wide monotonic clock
 #define CLOCK_PROCESS_CPUTIME_ID 2 // Process specific CPU-time clock
-#define CLOCK_THREAD_CPUTIME_ID  3 // Thread specific CPU-time clock
+#define CLOCK_THREAD_CPUTIME_ID 3  // Thread specific CPU-time clock
 
 #define TIMER_ABSTIME 1 // Absolute time flag
 
-struct timespec
-{
+struct timespec {
     time_t tv_sec; // Seconds
     long tv_nsec;  // Nanoseconds
 };
 
-struct itimerspec
-{
+struct itimerspec {
     struct timespec it_interval; // Timer period
     struct timespec it_value;    // Timer expiration
 };
 
-struct tm
-{
+struct tm {
     int tm_sec;   // Seconds
     int tm_min;   // Minutes
     int tm_hour;  // Hours
@@ -43,29 +40,39 @@ extern int daylight;
 
 extern long timezone;
 
-extern char *tzname[];
+extern char* tzname[];
 
 __BEGIN_DECLS
 
-char *asctime(const struct tm *time);
+char*
+asctime(const struct tm* time);
 
-clock_t clock(void);
+clock_t
+clock(void);
 
-char *ctime(const time_t *time);
+char*
+ctime(const time_t* time);
 
-double difftime(time_t t1, time_t t2);
+double
+difftime(time_t t1, time_t t2);
 
-struct tm *gmtime(const time_t *time);
+struct tm*
+gmtime(const time_t* time);
 
-struct tm *localtime(const time_t * time);
+struct tm*
+localtime(const time_t* time);
 
-time_t mktime(struct tm *time);
+time_t
+mktime(struct tm* time);
 
-size_t strftime(char *__restrict ptr, size_t size, const char *__restrict fmt, const struct tm *__restrict time);
+size_t
+strftime(char* __restrict ptr, size_t size, const char* __restrict fmt, const struct tm* __restrict time);
 
-char *strptime(const char *__restrict buf, const char *__restrict fmt, struct tm *__restrict time);
+char*
+strptime(const char* __restrict buf, const char* __restrict fmt, struct tm* __restrict time);
 
-time_t time(time_t *time);
+time_t
+time(time_t* time);
 
 __END_DECLS
 

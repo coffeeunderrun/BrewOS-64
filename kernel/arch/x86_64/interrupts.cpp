@@ -1,54 +1,52 @@
+#include <arch/x86_64/interrupts.hpp>
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
 #include <interrupts.hpp>
 #include <vector.hpp>
-#include <arch/x86_64/interrupts.hpp>
 
-extern "C"
-{
-    void init_interrupts(void);
-    void clear_irq(unsigned irq);
-}
+extern "C" void
+init_interrupts(void);
+
+extern "C" void
+clear_irq(unsigned irq);
 
 namespace BrewOS {
 namespace Interrupts {
 
 static const unsigned MAX_VECTORS = 48;
 
-static Vector<Callback> *callbacks[MAX_VECTORS];
+static Vector<Callback>* callbacks[MAX_VECTORS];
 
-void Initialize(void)
+void
+Initialize(void)
 {
     init_interrupts();
 }
 
-void AddCallback(unsigned vector, Callback callback)
+void
+AddCallback(unsigned vector, Callback callback)
 {
-    if(vector >= MAX_VECTORS)
-    {
+    if(vector >= MAX_VECTORS) {
         return;
     }
 
-    if(callbacks[vector] == nullptr)
-    {
+    if(callbacks[vector] == nullptr) {
         callbacks[vector] = new Vector<Callback>();
     }
 
     callbacks[vector]->Push(callback);
 }
 
-void RemoveCallback(unsigned vector, Callback callback)
+void
+RemoveCallback(unsigned vector, Callback callback)
 {
-    if(vector >= MAX_VECTORS)
-    {
+    if(vector >= MAX_VECTORS) {
         return;
     }
 
-    for(unsigned i = 0; callbacks[vector] && i < callbacks[vector]->Count(); )
-    {
-        if(callbacks[vector]->Get(i) != callback)
-        {
+    for(unsigned i = 0; callbacks[vector] && i < callbacks[vector]->Count();) {
+        if(callbacks[vector]->Get(i) != callback) {
             i++;
             continue;
         }
@@ -57,14 +55,13 @@ void RemoveCallback(unsigned vector, Callback callback)
     }
 }
 
-extern "C"
-void InterruptHandler(Registers *regs)
+extern "C" void
+InterruptHandler(Registers* regs)
 {
     assert(callbacks != nullptr);
     assert(regs->vector < MAX_VECTORS);
 
-    for(auto callback : *callbacks[regs->vector])
-    {
+    for(auto callback : *callbacks[regs->vector]) {
         callback(regs);
     }
 

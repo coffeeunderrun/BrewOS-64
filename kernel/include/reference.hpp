@@ -5,13 +5,13 @@
 
 namespace BrewOS {
 
-class Reference
-{
-private:
+class Reference {
+  private:
     int m_cnt;
 
-public:
-    Reference(int cnt = 0) : m_cnt(cnt)
+  public:
+    Reference(int cnt = 0)
+      : m_cnt(cnt)
     {
         assert(m_cnt >= 0);
     }
@@ -21,7 +21,7 @@ public:
         assert(m_cnt == 0);
     }
 
-    Reference &operator=(const Reference &)
+    Reference& operator=(const Reference&)
     {
         return *this;
     }
@@ -56,7 +56,7 @@ public:
         return m_cnt <= val;
     }
 
-    int &operator--(void)
+    int& operator--(void)
     {
         assert(m_cnt > 0);
         return --m_cnt;
@@ -68,7 +68,7 @@ public:
         return m_cnt--;
     }
 
-    int &operator++(void)
+    int& operator++(void)
     {
         assert(m_cnt >= 0);
         return ++m_cnt;

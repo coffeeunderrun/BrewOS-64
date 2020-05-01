@@ -8,27 +8,26 @@
 
 namespace BrewOS {
 
-template <class T>
+template<class T>
 class Vector {
-private:
-    T *m_data = nullptr;
+  private:
+    T* m_data = nullptr;
 
     size_t m_cap = 0;
     size_t m_cnt = 0;
 
-public:
-    Vector(size_t cap = 1) : m_cap(MAX(cap, 1))
+  public:
+    Vector(size_t cap = 1)
+      : m_cap(MAX(cap, 1))
     {
-        m_data = (T *)malloc((m_cap) * sizeof(T));
+        m_data = (T*)malloc((m_cap) * sizeof(T));
 
-        if(m_data == nullptr)
-        {
+        if(m_data == nullptr) {
             // PANIC
             return;
         }
 
-        for(size_t i = 0; i < m_cap; i++)
-        {
+        for(size_t i = 0; i < m_cap; i++) {
             m_data[i] = T{};
         }
     }
@@ -40,8 +39,7 @@ public:
 
     void Push(T item)
     {
-        if(m_cnt == m_cap && !Expand())
-        {
+        if(m_cnt == m_cap && !Expand()) {
             // Not enough memory
             return;
         }
@@ -51,14 +49,12 @@ public:
 
     T Pop(void)
     {
-        if(m_cnt == 0)
-        {
+        if(m_cnt == 0) {
             // No items left
             return 0;
         }
 
-        if(m_cnt <= m_cap / 4)
-        {
+        if(m_cnt <= m_cap / 4) {
             Shrink();
         }
 
@@ -67,14 +63,12 @@ public:
 
     void Insert(T item, size_t index)
     {
-        if(index >= m_cnt)
-        {
+        if(index >= m_cnt) {
             // Out of bounds
             return;
         }
 
-        if(m_cnt == m_cap && !Expand())
-        {
+        if(m_cnt == m_cap && !Expand()) {
             // Not enough memory
             return;
         }
@@ -88,14 +82,12 @@ public:
 
     T Remove(size_t index)
     {
-        if(index >= m_cnt)
-        {
+        if(index >= m_cnt) {
             // Out of bounds
             return T{};
         }
 
-        if(m_cnt <= m_cap / 4)
-        {
+        if(m_cnt <= m_cap / 4) {
             Shrink();
         }
 
@@ -111,8 +103,7 @@ public:
 
     void Set(T item, size_t index)
     {
-        if(index >= m_cnt)
-        {
+        if(index >= m_cnt) {
             // Out of bounds
             return T{};
         }
@@ -122,8 +113,7 @@ public:
 
     T Get(size_t index)
     {
-        if(index >= m_cnt)
-        {
+        if(index >= m_cnt) {
             // Out of bounds
             return T{};
         }
@@ -141,25 +131,24 @@ public:
         return m_cnt;
     }
 
-    T *begin(void)
+    T* begin(void)
     {
         return &m_data[0];
     }
 
-    T *end(void)
+    T* end(void)
     {
-        return (T *)(m_data + m_cnt);
+        return (T*)(m_data + m_cnt);
     }
 
-private:
+  private:
     bool Expand(void)
     {
         size_t new_cap = m_cap * 2;
 
-        T *data = (T *)realloc(m_data, sizeof(T) * new_cap);
+        T* data = (T*)realloc(m_data, sizeof(T) * new_cap);
 
-        if(data == nullptr)
-        {
+        if(data == nullptr) {
             // Not enough memory
             return false;
         }
@@ -167,8 +156,7 @@ private:
         m_data = data;
         m_cap = new_cap;
 
-        for(size_t i = m_cnt; i < m_cap; i++)
-        {
+        for(size_t i = m_cnt; i < m_cap; i++) {
             m_data[i] = T{};
         }
 
@@ -178,7 +166,7 @@ private:
     void Shrink(void)
     {
         m_cap = m_cap / 2;
-        m_data = (T *)realloc(m_data, sizeof(T) * m_cap);
+        m_data = (T*)realloc(m_data, sizeof(T) * m_cap);
 
         assert(m_data != nullptr);
     }

@@ -6,13 +6,16 @@ namespace Interrupts {
 
 typedef struct Registers Registers;
 
-typedef void (*Callback)(Registers *regs);
+typedef void (*Callback)(Registers* regs);
 
-void Initialize(void);
+void
+Initialize(void);
 
-void AddCallback(unsigned vector, Callback callback);
+void
+AddCallback(unsigned vector, Callback callback);
 
-void RemoveCallback(unsigned vector, Callback callback);
+void
+RemoveCallback(unsigned vector, Callback callback);
 
 } // Interrupts
 } // BrewOS

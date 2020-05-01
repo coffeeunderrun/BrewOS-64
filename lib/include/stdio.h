@@ -7,19 +7,18 @@
 
 typedef off_t fpos_t;
 
-typedef struct
-{
+typedef struct {
 } FILE;
 
-extern FILE *stdin;
-extern FILE *stdout;
-extern FILE *stderr;
+extern FILE* stdin;
+extern FILE* stdout;
+extern FILE* stderr;
 
-#define stdin  stdin
+#define stdin stdin
 #define stdout stdout
 #define stderr stderr
 
-#define STDIN_FILENO  0
+#define STDIN_FILENO 0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
@@ -37,91 +36,134 @@ extern FILE *stderr;
 
 __BEGIN_DECLS
 
-void clearerr(FILE *file);
+void
+clearerr(FILE* file);
 
-int fclose(FILE *file);
+int
+fclose(FILE* file);
 
-FILE *fdopen(int fd, const char *mode);
+FILE*
+fdopen(int fd, const char* mode);
 
-int feof(FILE *file);
+int
+feof(FILE* file);
 
-int ferror(FILE *file);
+int
+ferror(FILE* file);
 
-int fflush(FILE *file);
+int
+fflush(FILE* file);
 
-int fgetc(FILE *file);
+int
+fgetc(FILE* file);
 
-int fgetpos(FILE *file, fpos_t *pos);
+int
+fgetpos(FILE* file, fpos_t* pos);
 
-char *fgets(char *str, int cnt, FILE *file);
+char*
+fgets(char* str, int cnt, FILE* file);
 
-int fileno(FILE *file);
+int
+fileno(FILE* file);
 
-int fprintf(FILE *file, const char *fmt, ...);
+int
+fprintf(FILE* file, const char* fmt, ...);
 
-int fputc(int chr, FILE *file);
+int
+fputc(int chr, FILE* file);
 
-int fputs(const char *str, FILE *file);
+int
+fputs(const char* str, FILE* file);
 
-FILE *fopen(const char *path, const char *mode);
+FILE*
+fopen(const char* path, const char* mode);
 
-size_t fread(void *ptr, size_t el_size, size_t el_cnt, FILE *file);
+size_t
+fread(void* ptr, size_t el_size, size_t el_cnt, FILE* file);
 
-FILE *freopen(const char *path, const char *mode, FILE *file);
+FILE*
+freopen(const char* path, const char* mode, FILE* file);
 
-int fscanf(FILE *file, const char *fmt, ...);
+int
+fscanf(FILE* file, const char* fmt, ...);
 
-int fseek(FILE *file, long offet, int seek);
+int
+fseek(FILE* file, long offet, int seek);
 
-int fsetpos(FILE *file, const fpos_t *pos);
+int
+fsetpos(FILE* file, const fpos_t* pos);
 
-long ftell(FILE *file);
+long
+ftell(FILE* file);
 
-size_t fwrite(const void *ptr, size_t el_size, size_t el_cnt, FILE *file);
+size_t
+fwrite(const void* ptr, size_t el_size, size_t el_cnt, FILE* file);
 
-int getc(FILE *file);
+int
+getc(FILE* file);
 
-int getchar(void);
+int
+getchar(void);
 
-void perror(const char *str);
+void
+perror(const char* str);
 
-int printf(const char *fmt, ...);
+int
+printf(const char* fmt, ...);
 
-int putc(int chr, FILE *file);
+int
+putc(int chr, FILE* file);
 
-int putchar(int chr);
+int
+putchar(int chr);
 
-int puts(const char *str);
+int
+puts(const char* str);
 
-int remove(const char *path);
+int
+remove(const char* path);
 
-int rename(const char *old_name, const char *new_name);
+int
+rename(const char* old_name, const char* new_name);
 
-void rewind(FILE *file);
+void
+rewind(FILE* file);
 
-int scanf(const char *fmt, ...);
+int
+scanf(const char* fmt, ...);
 
-void setbuf(FILE *file, char *buf);
+void
+setbuf(FILE* file, char* buf);
 
-int setvbuf(FILE *file, char *buf, int mode, size_t size);
+int
+setvbuf(FILE* file, char* buf, int mode, size_t size);
 
-int snprintf(char *str, size_t size, const char *fmt, ...);
+int
+snprintf(char* str, size_t size, const char* fmt, ...);
 
-int sprintf(char *str, const char *fmt, ...);
+int
+sprintf(char* str, const char* fmt, ...);
 
-int sscanf(const char *str, const char *fmt, ...);
+int
+sscanf(const char* str, const char* fmt, ...);
 
-FILE *tmpfile(void);
+FILE*
+tmpfile(void);
 
-int ungetc(int chr, FILE *file);
+int
+ungetc(int chr, FILE* file);
 
-int vfprintf(FILE *file, const char *fmt, va_list arg);
+int
+vfprintf(FILE* file, const char* fmt, va_list arg);
 
-int vprintf(const char *fmt, va_list arg);
+int
+vprintf(const char* fmt, va_list arg);
 
-int vsnprintf(char *str, size_t size, const char *fmt, va_list arg);
+int
+vsnprintf(char* str, size_t size, const char* fmt, va_list arg);
 
-int vsprintf(char *str, const char *fmt, va_list arg);
+int
+vsprintf(char* str, const char* fmt, va_list arg);
 
 __END_DECLS
 

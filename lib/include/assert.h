@@ -13,12 +13,14 @@
 #ifdef NDEBUG
 #define assert(expr) ((void)0)
 #else
-#define assert(expr) ((expr) ? (void)0 : dprint(#expr, __FILE__, __LINE__, __ASSERT_FUNCTION))
+#define assert(expr) ((void)0)
+//#define assert(expr) ((expr) ? (void)0 : dprint(#expr, __FILE__, __LINE__, __ASSERT_FUNCTION))
 #endif
 
 __BEGIN_DECLS
 
-extern void dprint(const char *expr, const char *file, int line, const char *func) __attribute__((noreturn));
+extern void
+dprint(const char* expr, const char* file, int line, const char* func) __attribute__((noreturn));
 
 __END_DECLS
 

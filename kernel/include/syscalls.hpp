@@ -4,7 +4,8 @@
 namespace BrewOS {
 namespace Syscalls {
 
-void Initialize(void);
+void
+Initialize(void);
 
 } // Syscalls
 } // BrewOS

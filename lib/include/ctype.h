@@ -11,61 +11,89 @@
 
 __BEGIN_DECLS
 
-int isalnum(int chr);
+int
+isalnum(int chr);
 
-int isalnum_l(int chr, locale_t locale);
+int
+isalnum_l(int chr, locale_t locale);
 
-int isalpha(int chr);
+int
+isalpha(int chr);
 
-int isalpha_l(int chr, locale_t locale);
+int
+isalpha_l(int chr, locale_t locale);
 
-int isblank(int chr);
+int
+isblank(int chr);
 
-int isblank_l(int chr, locale_t locale);
+int
+isblank_l(int chr, locale_t locale);
 
-int iscntrl(int chr);
+int
+iscntrl(int chr);
 
-int iscntrl_l(int chr, locale_t locale);
+int
+iscntrl_l(int chr, locale_t locale);
 
-int isdigit(int chr);
+int
+isdigit(int chr);
 
-int isdigit_l(int chr, locale_t locale);
+int
+isdigit_l(int chr, locale_t locale);
 
-int isgraph(int chr);
+int
+isgraph(int chr);
 
-int isgraph_l(int chr, locale_t locale);
+int
+isgraph_l(int chr, locale_t locale);
 
-int islower(int chr);
+int
+islower(int chr);
 
-int islower_l(int chr, locale_t locale);
+int
+islower_l(int chr, locale_t locale);
 
-int isprint(int chr);
+int
+isprint(int chr);
 
-int isprint_l(int chr, locale_t locale);
+int
+isprint_l(int chr, locale_t locale);
 
-int ispunct(int chr);
+int
+ispunct(int chr);
 
-int ispunct_l(int chr, locale_t locale);
+int
+ispunct_l(int chr, locale_t locale);
 
-int isspace(int chr);
+int
+isspace(int chr);
 
-int isspace_l(int chr, locale_t locale);
+int
+isspace_l(int chr, locale_t locale);
 
-int isupper(int chr);
+int
+isupper(int chr);
 
-int isupper_l(int chr, locale_t locale);
+int
+isupper_l(int chr, locale_t locale);
 
-int isxdigit(int chr);
+int
+isxdigit(int chr);
 
-int isxdigit_l(int chr, locale_t locale);
+int
+isxdigit_l(int chr, locale_t locale);
 
-int tolower(int chr);
+int
+tolower(int chr);
 
-int tolower_l(int chr, locale_t locale);
+int
+tolower_l(int chr, locale_t locale);
 
-int toupper(int chr);
+int
+toupper(int chr);
 
-int toupper_l(int chr, locale_t locale);
+int
+toupper_l(int chr, locale_t locale);
 
 __END_DECLS
 

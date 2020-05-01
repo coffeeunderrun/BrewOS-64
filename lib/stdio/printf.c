@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-int printf(const char *fmt, ...)
+int
+printf(const char* fmt, ...)
 {
     va_list arg;
     va_start(arg, fmt);
@@ -12,7 +13,8 @@ int printf(const char *fmt, ...)
     return result;
 }
 
-int vprintf(const char *fmt, va_list arg)
+int
+vprintf(const char* fmt, va_list arg)
 {
     return vfprintf(stdout, fmt, arg);
 }

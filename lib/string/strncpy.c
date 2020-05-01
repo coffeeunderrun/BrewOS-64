@@ -1,13 +1,15 @@
 #include <string.h>
 
-char *strncpy(char *dst, const char *src, size_t cnt)
+char*
+strncpy(char* dst, const char* src, size_t cnt)
 {
-	char *pd = dst;
-	const char *ps = src;
+    char* pd = dst;
+    const char* ps = src;
 
-	for( ; cnt && *ps; cnt--, *pd++ = *ps++);
+    for(; cnt && *ps; cnt--, *pd++ = *ps++)
+        ;
 
-	*pd = '\0';
+    *pd = '\0';
 
-	return dst;
+    return dst;
 }

@@ -2,15 +2,16 @@
 #include <memory.hpp>
 #include <syscalls.hpp>
 
-extern "C"
-void _init();
+extern "C" void
+_init();
 
 namespace BrewOS {
 
-extern "C"
-void KernelMain(void *mmap) __attribute__((noreturn));
+extern "C" void
+KernelMain(void* mmap) __attribute__((noreturn));
 
-void KernelMain(void *mmap)
+void
+KernelMain(void* mmap)
 {
     // Initialize interrupt handler
     Interrupts::Initialize();
@@ -24,7 +25,8 @@ void KernelMain(void *mmap)
     // Initialize system calls
     Syscalls::Initialize();
 
-    while(1);
+    while(1)
+        ;
 }
 
 } // BrewOS
