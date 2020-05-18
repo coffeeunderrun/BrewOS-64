@@ -18,7 +18,7 @@ SHARED_SRCS := \
 	stdio/fprintf.c stdio/printf.c stdio/sprintf.c \
 	stdlib/heap.c \
 	string/memchr.c string/memcmp.c string/memcpy.c string/memmove.c string/memset.c \
-	string/strcat.c string/strcpy.c string/strlen.c string/strncat.c string/strncpy.c \
+	string/strcat.c string/strcmp.c string/strcpy.c string/strlen.c string/strncat.c string/strncpy.c \
 	mman/mmap.c \
 	unistd/write.c
 
