@@ -113,7 +113,11 @@ class String {
     int Compare(size_t pos, size_t len, const String& str) const;
     int Compare(size_t pos, size_t len, const String& str, size_t spos, size_t slen = npos) const;
 
-    void Clear(void);
+    void Clear(void)
+    {
+        m_str[0] = '\0';
+        m_len = 0;
+    }
 
     bool Empty(void) const
     {

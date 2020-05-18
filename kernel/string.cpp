@@ -35,9 +35,9 @@ String::String(const String& str)
 {
 }
 
-String::String(const String& str, size_t pos, size_t len)
+String::String(const String& str, size_t spos, size_t slen)
 {
-    m_cap = m_len = MIN(len, str.m_len) - pos;
+    m_cap = m_len = MIN(slen, str.m_len) - spos;
     m_str = (char*)malloc((m_cap + 1) * sizeof(char));
 
     if(m_str == nullptr) {
@@ -45,7 +45,7 @@ String::String(const String& str, size_t pos, size_t len)
         return;
     }
 
-    strncpy(m_str, (char*)(str.m_str + pos), m_len);
+    strncpy(m_str, (char*)(str.m_str + spos), m_len);
 }
 
 String::~String(void)
@@ -75,11 +75,16 @@ String::Assign(const char* str)
     return *this;
 }
 
-void
-String::Clear(void)
+int
+String::Compare(const char* str) const
 {
-    m_str[0] = '\0';
-    m_len = 0;
+    return strcmp(m_str, str);
+}
+
+int
+String::Compare(const String& str) const
+{
+    return strcmp(m_str, str.m_str);
 }
 
 void
