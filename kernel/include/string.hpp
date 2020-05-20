@@ -1,6 +1,7 @@
 #ifndef KERNEL_STRING
 #define KERNEL_STRING
 
+#include <cstddef>
 #include <cstdint>
 
 namespace BrewOS {
