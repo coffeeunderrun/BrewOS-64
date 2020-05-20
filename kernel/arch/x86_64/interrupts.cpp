@@ -93,8 +93,10 @@ InterruptHandler(Registers* regs)
     assert(callbacks != nullptr);
     assert(regs->vector < MAX_VECTORS);
 
-    for(auto callback : *callbacks[regs->vector]) {
-        callback(regs);
+    if(callbacks[regs->vector] != nullptr) {
+        for(auto callback : *callbacks[regs->vector]) {
+            callback(regs);
+        }
     }
 
     clear_irq(regs->vector);
