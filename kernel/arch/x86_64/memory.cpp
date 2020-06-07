@@ -6,11 +6,9 @@
  */
 
 #include <arch/x86_64/arch.hpp>
-#include <arch/x86_64/interrupts.hpp>
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
-#include <interrupts.hpp>
 #include <memory.hpp>
 
 extern const uintptr_t _kernel_start;
@@ -78,9 +76,6 @@ MapPage(uintptr_t addr, int flags, uintptr_t (*pop)(void));
 
 static err_t
 UnmapPage(uintptr_t addr, void (*push)(uintptr_t));
-
-static void
-PageFaultHandler(Interrupts::Registers* regs);
 
 static PageTable*
 GetP4Table(uintptr_t addr);
@@ -181,8 +176,6 @@ Initialize(void* mmap)
     while(mmap_entry && (addr = PopMemMapFrame()) > 0) {
         PushStackFrame(addr);
     }
-
-    Interrupts::AddCallback(Interrupts::VECTOR_PF, PageFaultHandler);
 }
 
 err_t
@@ -430,8 +423,8 @@ UnmapPage(uintptr_t vaddr, void (*push)(uintptr_t))
     return OK;
 }
 
-static void
-PageFaultHandler(Interrupts::Registers* regs)
+void
+PageFaultHandler(Registers* regs)
 {
 }
 
