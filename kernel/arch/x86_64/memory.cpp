@@ -5,7 +5,7 @@
  * - Memory map has last entry with a type of zero (temporary)
  */
 
-#include <arch/x86_64/arch.hpp>
+#include "arch.hpp"
 #include <cerrno>
 #include <cstdint>
 #include <cstring>

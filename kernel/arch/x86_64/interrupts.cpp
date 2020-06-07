@@ -1,4 +1,4 @@
-#include <arch/x86_64/arch.hpp>
+#include "arch.hpp"
 #include <cerrno>
 #include <cstddef>
 #include <cstring>
