@@ -41,7 +41,7 @@ const uint64_t PAGE_NOEXECUTE = 1ull << 63; // Set if page shouldn't allow code 
 #define ALIGN(x) (((uintptr_t)(x) + 0xFFF) & 0xFFFFFFFFFFFFF000)
 
 // Get lower half address of identity mapped virtual address
-#define PADDR(x) ((uintptr_t)(x)&0x7FFFFFFF)
+#define PADDR(x) (((uintptr_t)(x)) & 0x7FFFFFFF)
 
 typedef struct {
     uint64_t base; // Memory region base address

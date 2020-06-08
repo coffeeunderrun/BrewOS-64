@@ -13,38 +13,41 @@ clear_irq(unsigned irq);
 
 namespace BrewOS {
 namespace Interrupts {
+namespace Vectors {
 
-const int VECTOR_DE = 0;    // Divide by zero error
-const int VECTOR_DB = 1;    // Debug
-const int VECTOR_NMI = 2;   // NMI
-const int VECTOR_BP = 3;    // Breakpoint
-const int VECTOR_OF = 4;    // Overflow
-const int VECTOR_BR = 5;    // Bound range
-const int VECTOR_UD = 6;    // Invalid opcode
-const int VECTOR_NM = 7;    // Device not available
-const int VECTOR_DF = 8;    // Double fault
-const int VECTOR_TS = 10;   // Invalid TSS
-const int VECTOR_NP = 11;   // Segment not present
-const int VECTOR_SS = 12;   // Stack
-const int VECTOR_GP = 13;   // General protection
-const int VECTOR_PF = 14;   // Page fault
-const int VECTOR_MF = 16;   // x87 floating point
-const int VECTOR_AC = 17;   // Alignment check
-const int VECTOR_MC = 18;   // Machine check
-const int VECTOR_XM = 19;   // SIMD floating point
-const int VECTOR_VE = 20;   // Virtualization
-const int VECTOR_SX = 30;   // Security
-const int VECTOR_PIT = 32;  // PIT
-const int VECTOR_KB = 33;   // Keyboard
-const int VECTOR_COM2 = 35; // COM2
-const int VECTOR_COM1 = 36; // COM1
-const int VECTOR_LPT2 = 37; // LPT2
-const int VECTOR_FD = 38;   // Floppy disk
-const int VECTOR_LPT1 = 39; // LPT1
-const int VECTOR_RTC = 40;  // RTC
-const int VECTOR_PS2 = 44;  // Mouse
-const int VECTOR_HDD1 = 46; // Primary hard disk
-const int VECTOR_HDD2 = 47; // Secondary hard disk
+const int DE = 0;    // Divide by zero error
+const int DB = 1;    // Debug
+const int NMI = 2;   // NMI
+const int BP = 3;    // Breakpoint
+const int OF = 4;    // Overflow
+const int BR = 5;    // Bound range
+const int UD = 6;    // Invalid opcode
+const int NM = 7;    // Device not available
+const int DF = 8;    // Double fault
+const int TS = 10;   // Invalid TSS
+const int NP = 11;   // Segment not present
+const int SS = 12;   // Stack segent fault
+const int GP = 13;   // General protection fault
+const int PF = 14;   // Page fault
+const int MF = 16;   // x87 floating point
+const int AC = 17;   // Alignment check
+const int MC = 18;   // Machine check
+const int XM = 19;   // SIMD floating point
+const int VE = 20;   // Virtualization
+const int SX = 30;   // Security
+const int PIT = 32;  // PIT
+const int KBD = 33;  // Keyboard
+const int COM2 = 35; // COM2
+const int COM1 = 36; // COM1
+const int LPT2 = 37; // LPT2
+const int FDD = 38;  // Floppy disk
+const int LPT1 = 39; // LPT1
+const int RTC = 40;  // RTC
+const int PS2 = 44;  // Mouse
+const int HDD1 = 46; // Primary hard disk
+const int HDD2 = 47; // Secondary hard disk
+
+} // Vectors
 
 static const unsigned MAX_VECTORS = 48;
 

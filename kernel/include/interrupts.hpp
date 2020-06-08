@@ -5,38 +5,41 @@
 
 namespace BrewOS {
 namespace Interrupts {
+namespace Vectors {
 
-extern const int VECTOR_DE;   // Divide by zero error
-extern const int VECTOR_DB;   // Debug
-extern const int VECTOR_NMI;  // NMI
-extern const int VECTOR_BP;   // Breakpoint
-extern const int VECTOR_OF;   // Overflow
-extern const int VECTOR_BR;   // Bound range
-extern const int VECTOR_UD;   // Invalid opcode
-extern const int VECTOR_NM;   // Device not available
-extern const int VECTOR_DF;   // Double fault
-extern const int VECTOR_TS;   // Invalid TSS
-extern const int VECTOR_NP;   // Segment not present
-extern const int VECTOR_SS;   // Stack
-extern const int VECTOR_GP;   // General protection
-extern const int VECTOR_PF;   // Page fault
-extern const int VECTOR_MF;   // x87 floating point
-extern const int VECTOR_AC;   // Alignment check
-extern const int VECTOR_MC;   // Machine check
-extern const int VECTOR_XM;   // SIMD floating point
-extern const int VECTOR_VE;   // Virtualization
-extern const int VECTOR_SX;   // Security
-extern const int VECTOR_PIT;  // PIT
-extern const int VECTOR_KB;   // Keyboard
-extern const int VECTOR_COM2; // COM2
-extern const int VECTOR_COM1; // COM1
-extern const int VECTOR_LPT2; // LPT2
-extern const int VECTOR_FD;   // Floppy disk
-extern const int VECTOR_LPT1; // LPT1
-extern const int VECTOR_RTC;  // RTC
-extern const int VECTOR_PS2;  // Mouse
-extern const int VECTOR_HDD1; // Primary hard disk
-extern const int VECTOR_HDD2; // Secondary hard disk
+extern const int DE;   // Divide by zero error
+extern const int DB;   // Debug
+extern const int NMI;  // NMI
+extern const int BP;   // Breakpoint
+extern const int OF;   // Overflow
+extern const int BR;   // Bound range
+extern const int UD;   // Invalid opcode
+extern const int NM;   // Device not available
+extern const int DF;   // Double fault
+extern const int TS;   // Invalid TSS
+extern const int NP;   // Segment not present
+extern const int SS;   // Stack segent fault
+extern const int GP;   // General protection fault
+extern const int PF;   // Page fault
+extern const int MF;   // x87 floating point
+extern const int AC;   // Alignment check
+extern const int MC;   // Machine check
+extern const int XM;   // SIMD floating point
+extern const int VE;   // Virtualization
+extern const int SX;   // Security
+extern const int PIT;  // PIT
+extern const int KBD;  // Keyboard
+extern const int COM2; // COM2
+extern const int COM1; // COM1
+extern const int LPT2; // LPT2
+extern const int FDD;  // Floppy disk
+extern const int LPT1; // LPT1
+extern const int RTC;  // RTC
+extern const int PS2;  // Mouse
+extern const int HDD1; // Primary hard disk
+extern const int HDD2; // Secondary hard disk
+
+} // Vectors
 
 typedef void (*Callback)(Registers* regs);
 

@@ -17,9 +17,11 @@ KernelMain(void* mmap)
     // Initialize memory manager
     Memory::Initialize(mmap);
 
-    // Initialize interrupt handler
+    // Initialize interrupt manager
     Interrupts::Initialize();
-    Interrupts::AddCallback(Interrupts::VECTOR_PF, Memory::PageFaultHandler);
+
+    // Let memory manager handle page faults
+    Interrupts::AddCallback(Interrupts::Vectors::PF, Memory::PageFaultHandler);
 
     // Call global constructors
     _init();
