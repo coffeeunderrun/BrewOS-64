@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+
+  toolchain:
+    image: toolchain
+    build:
+      context: ./build/toolchain
+
+  build:
+    image: brewos
+    build:
+      context: ./build/brewos
+    volumes:
+      - ./src:/usr/src/brewos
+    environment:
+      - DISPLAY=${DISPLAY}
+    stdin_open: true
+    tty: true

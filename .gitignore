@@ -1,9 +1,3 @@
-/root
-/sysroot
-/boot/boot
-/boot/loader
-/kernel/kernel
-*.img
-*.a
-*.d
+*.ps1
 *.o
+*.d
