@@ -1,7 +1,7 @@
 FROM debian:stretch
 
 RUN apt-get --quiet --yes update \
- && apt-get --quiet --yes install yasm xorriso qemu \
+ && apt-get --quiet --yes install yasm xorriso qemu make \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists
 

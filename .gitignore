@@ -1,3 +1,10 @@
+.vscode
+root
+boot/boot
+boot/loader
+kernel/kernel
 *.ps1
 *.o
 *.d
+*.img
+*.map

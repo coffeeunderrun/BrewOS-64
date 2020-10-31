@@ -16,6 +16,12 @@ A 64-bit hobby operating system for the x86_64 architecture.
 5. Access bash shell
 `docker-compose exec build /bin/bash`
 
+6. Build bootable image from bash shell
+`make brewos.img`
+
+7. Start virtual machine from bash shell
+`./boot.sh`
+
 ## Authors
 * **Jamie** - *Initial work* - [coffeeunderrun](https://github.com/coffeeunderrun)
 
