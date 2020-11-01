@@ -1,8 +1,8 @@
 .vscode
-root
-boot/boot
-boot/loader
-kernel/kernel
+src/root
+src/boot/boot
+src/boot/loader
+src/kernel/kernel
 *.ps1
 *.o
 *.d
